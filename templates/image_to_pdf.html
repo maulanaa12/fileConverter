@@ -516,26 +516,64 @@
             customStr = document.getElementById('custom-groups-input').value.trim();
         }
 
-        // Generate groups index
         const total = selectedItems.length;
         let groups = [];
-        if (customStr) {
+
+        if (gType === 'custom' && customStr) {
+            const explicitRanges = [];
             const parts = customStr.split(',').map(s => s.trim()).filter(Boolean);
             parts.forEach(p => {
                 if (p.includes('-')) {
                     const [s, e] = p.split('-').map(x => parseInt(x.trim()));
                     if (!isNaN(s) && !isNaN(e)) {
-                        const grp = [];
-                        for (let i = Math.min(s, e); i <= Math.max(s, e); i++) {
-                            if (i >= 1 && i <= total) grp.push(i - 1);
+                        const startP = Math.min(s, e);
+                        const endP = Math.max(s, e);
+                        if (startP >= 1 && startP <= total) {
+                            explicitRanges.push([startP, Math.min(endP, total)]);
                         }
-                        if (grp.length) groups.push(grp);
                     }
                 } else {
                     const s = parseInt(p);
-                    if (!isNaN(s) && s >= 1 && s <= total) groups.push([s - 1]);
+                    if (!isNaN(s) && s >= 1 && s <= total) {
+                        explicitRanges.push([s, s]);
+                    }
                 }
             });
+
+            if (explicitRanges.length > 0) {
+                explicitRanges.sort((a, b) => a[0] - b[0]);
+                let curP = 1;
+                let rangePtr = 0;
+
+                while (curP <= total) {
+                    let matchedRange = null;
+                    while (rangePtr < explicitRanges.length) {
+                        const [rStart, rEnd] = explicitRanges[rangePtr];
+                        if (rEnd < curP) {
+                            rangePtr++;
+                            continue;
+                        }
+                        if (rStart <= curP && curP <= rEnd) {
+                            matchedRange = [rStart, rEnd];
+                        }
+                        break;
+                    }
+
+                    if (matchedRange) {
+                        const [rStart, rEnd] = matchedRange;
+                        const grp = [];
+                        for (let p = curP; p <= rEnd; p++) {
+                            grp.push(p - 1);
+                        }
+                        groups.push(grp);
+                        curP = rEnd + 1;
+                        rangePtr++;
+                    } else {
+                        groups.push([curP - 1]);
+                        curP++;
+                    }
+                }
+            }
         }
         
         if (groups.length === 0) {
@@ -595,11 +633,16 @@
                 }
             }
 
+            const isMultiPage = indices.length > 1;
             const pageLabels = indices.map(i => `Hal ${i + 1}`).join(', ');
             html += `
-                <div class="flex items-center justify-between py-0.5 border-b border-amber-100/60">
-                    <span class="font-bold text-amber-950 truncate max-w-[130px]" title="${filename}">📄 ${filename}</span>
-                    <span class="text-[9px] text-amber-700 bg-amber-100/80 px-1.5 py-0.5 rounded">${indices.length} Hal (${pageLabels})</span>
+                <div class="flex items-center justify-between py-1 px-1.5 rounded-lg ${isMultiPage ? 'bg-amber-100/70 border border-amber-300 font-bold' : 'border-b border-amber-100/60'}">
+                    <span class="text-amber-950 truncate max-w-[130px]" title="${filename}">
+                        ${isMultiPage ? '📑 ' : '📄 '} ${filename}
+                    </span>
+                    <span class="text-[9px] ${isMultiPage ? 'text-amber-900 bg-amber-200/90 font-extrabold' : 'text-amber-700 bg-amber-100/80'} px-1.5 py-0.5 rounded">
+                        ${indices.length} Hal (${pageLabels})
+                    </span>
                 </div>
             `;
         });

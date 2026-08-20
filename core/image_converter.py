@@ -74,10 +74,11 @@ def create_image_groups(
 ) -> List[List[int]]:
     """
     Mengembalikan list of list indices (0-indexed) untuk pembagian kelompok gambar.
-    Contoh group_size=2 pada 4 gambar: [[0, 1], [2, 3]]
+    Jika custom_groups_str diisi (misal '105-108'), halaman yang berada di dalam rentang
+    akan digabungkan menjadi 1 file PDF, sedangkan halaman lainnya tetap menjadi 1 halaman per file PDF.
     """
     if custom_groups_str and custom_groups_str.strip():
-        groups = []
+        explicit_ranges = []
         parts = [p.strip() for p in custom_groups_str.split(",") if p.strip()]
         for part in parts:
             if "-" in part:
@@ -86,19 +87,49 @@ def create_image_groups(
                     try:
                         s = int(bounds[0].strip())
                         e = int(bounds[1].strip())
-                        grp = [i - 1 for i in range(min(s, e), max(s, e) + 1) if 1 <= i <= total_images]
-                        if grp:
-                            groups.append(grp)
+                        start_p = min(s, e)
+                        end_p = max(s, e)
+                        if 1 <= start_p <= total_images:
+                            end_p = min(end_p, total_images)
+                            explicit_ranges.append((start_p, end_p))
                     except ValueError:
                         pass
             else:
                 try:
                     s = int(part)
                     if 1 <= s <= total_images:
-                        groups.append([s - 1])
+                        explicit_ranges.append((s, s))
                 except ValueError:
                     pass
-        if groups:
+
+        if explicit_ranges:
+            explicit_ranges.sort(key=lambda r: r[0])
+            groups = []
+            cur_p = 1
+            range_ptr = 0
+
+            while cur_p <= total_images:
+                # Cari apakah cur_p cocok dengan rentang kustom
+                matched_range = None
+                while range_ptr < len(explicit_ranges):
+                    r_start, r_end = explicit_ranges[range_ptr]
+                    if r_end < cur_p:
+                        range_ptr += 1
+                        continue
+                    if r_start <= cur_p <= r_end:
+                        matched_range = (r_start, r_end)
+                    break
+
+                if matched_range:
+                    r_start, r_end = matched_range
+                    grp = [p - 1 for p in range(cur_p, r_end + 1)]
+                    groups.append(grp)
+                    cur_p = r_end + 1
+                    range_ptr += 1
+                else:
+                    groups.append([cur_p - 1])
+                    cur_p += 1
+
             return groups
 
     # Auto group size
