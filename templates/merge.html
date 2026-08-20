@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Merge PDF - Gabungkan File PDF Online & Lokal{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <!-- Header Tool -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        <div>
+            <div class="flex items-center gap-2">
+                <a href="/" class="text-slate-400 hover:text-slate-600"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Merge PDF</h1>
+            </div>
+            <p class="text-sm text-slate-500 mt-1">Gabungkan beberapa dokumen PDF menjadi satu file dalam urutan yang Anda inginkan.</p>
+        </div>
+        <div id="top-actions" class="hidden flex items-center gap-2">
+            <button onclick="sortNaturally()" class="px-3 py-2 text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="arrow-down-az" class="w-4 h-4 text-brand-600"></i> Urutkan Alami (1, 2, 10)
+            </button>
+            <button onclick="clearAllFiles()" class="px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-1.5">
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Semua
+            </button>
+        </div>
+    </div>
+
+    <!-- State 1: Dropzone (Saat belum ada file) -->
+    <div id="dropzone-container" class="space-y-4">
+        <div id="merge-dropzone" class="dropzone rounded-3xl bg-white p-12 text-center cursor-pointer flex flex-col items-center justify-center min-h-[320px]">
+            <input type="file" id="file-input" multiple accept=".pdf,application/pdf" class="hidden">
+            <div class="w-20 h-20 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mb-4 ring-8 ring-red-50/50">
+                <i data-lucide="file-plus" class="w-10 h-10"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800">Pilih beberapa file PDF</h3>
+            <p class="text-sm text-slate-500 mt-1 max-w-md">Tarik dan letakkan file PDF Anda ke sini, atau klik untuk memilih dari komputer</p>
+            <button type="button" class="mt-6 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 transition-all transform active:scale-95 flex items-center gap-2">
+                <i data-lucide="folder-open" class="w-5 h-5"></i>
+                Pilih File PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- State 2: File List & Sorting Area (Saat file sudah diunggah) -->
+    <div id="workspace-container" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Left: Cards Grid (Drag to Reorder) -->
+        <div class="lg:col-span-3 space-y-4">
+            <div class="flex items-center justify-between bg-slate-100/80 px-4 py-2.5 rounded-xl text-xs font-medium text-slate-600">
+                <span class="flex items-center gap-1.5">
+                    <i data-lucide="move" class="w-4 h-4 text-slate-400"></i> Geser kartu untuk mengubah urutan penggabungan
+                </span>
+                <button onclick="document.getElementById('add-more-input').click()" class="text-brand-600 hover:text-brand-700 font-bold flex items-center gap-1">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Tambah File Lain
+                </button>
+                <input type="file" id="add-more-input" multiple accept=".pdf,application/pdf" class="hidden">
+            </div>
+
+            <!-- Sortable Container -->
+            <div id="files-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[250px]">
+                <!-- File items dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Right: Settings & Action Panel -->
+        <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5 sticky top-24">
+                <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base">
+                    <i data-lucide="sliders" class="w-5 h-5 text-brand-600"></i> Pengaturan Merge
+                </h3>
+
+                <!-- Summary Badge -->
+                <div class="p-3 bg-slate-50 rounded-xl space-y-1.5 text-xs text-slate-600">
+                    <div class="flex justify-between">
+                        <span>Total Dokumen:</span>
+                        <strong id="summary-file-count" class="text-slate-900">0</strong>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Total Halaman:</span>
+                        <strong id="summary-page-count" class="text-slate-900">0</strong>
+                    </div>
+                </div>
+
+                <!-- Output Filename -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-700">Nama File Hasil (.pdf)</label>
+                    <input type="text" id="output-filename" value="merged_document.pdf" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+
+                <!-- Custom Output Folder (Optional) -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600"></i> Simpan Langsung ke Folder (Opsional)
+                    </label>
+                    <input type="text" id="custom-output-dir" placeholder="Contoh: D:\hasil_merge atau ./file" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                    <span class="text-[10px] text-slate-400 block">Kosongkan jika hanya ingin download via browser.</span>
+                </div>
+
+                <!-- Merge Button -->
+                <button id="btn-merge" onclick="processMerge()" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                    <span>Merge PDF Sekarang</span>
+                </button>
+
+                <p class="text-[11px] text-center text-slate-400">Penggabungan dilakukan 100% lokal di komputer Anda.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Success / Download Result -->
+    <div id="result-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto ring-8 ring-emerald-50">
+                <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h3 class="text-2xl font-extrabold text-slate-900">PDF Berhasil Digabung!</h3>
+                <p id="result-meta" class="text-sm text-slate-500 mt-1">Dokumen Anda telah siap diunduh.</p>
+                <div id="saved-folder-box" class="hidden mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-left text-xs">
+                    <span class="font-bold text-emerald-800 flex items-center gap-1">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Tersimpan di Folder Komputer:
+                    </span>
+                    <span id="saved-folder-path" class="font-mono text-slate-700 block mt-1 break-all select-all"></span>
+                    <button id="btn-open-folder" onclick="openSavedFolder()" class="mt-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1">
+                        <i data-lucide="folder" class="w-3.5 h-3.5"></i> Buka Folder di File Explorer
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <a id="btn-download-result" href="#" download class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    Unduh File PDF
+                </a>
+                <button onclick="resetTool()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl transition-colors">
+                    Gabung Dokumen Lain
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let uploadedFiles = []; // [{id, file, name, size, pageCount, rotation, thumbUrl, tempPath}]
+    let sortableInstance = null;
+
+    const dropzoneContainer = document.getElementById('dropzone-container');
+    const workspaceContainer = document.getElementById('workspace-container');
+    const topActions = document.getElementById('top-actions');
+    const filesGrid = document.getElementById('files-grid');
+    const fileInput = document.getElementById('file-input');
+    const addMoreInput = document.getElementById('add-more-input');
+
+    // Setup Dropzone
+    setupDropzone(document.getElementById('merge-dropzone'), fileInput, handleFilesUpload);
+    addMoreInput.addEventListener('change', () => {
+        if (addMoreInput.files && addMoreInput.files.length > 0) {
+            handleFilesUpload(Array.from(addMoreInput.files));
+        }
+        addMoreInput.value = '';
+    });
+
+    async function handleFilesUpload(files) {
+        if (!files || files.length === 0) return;
+        
+        const pdfFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.pdf') || f.type === 'application/pdf');
+        if (pdfFiles.length === 0) {
+            showToast('Harap pilih file berformat PDF.', 'warning');
+            return;
+        }
+
+        showToast(`Mengunggah & memproses ${pdfFiles.length} file...`, 'info');
+
+        const formData = new FormData();
+        for (let i = 0; i < pdfFiles.length; i++) {
+            formData.append('files', pdfFiles[i]);
+        }
+
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                showToast(data.message || 'Gagal mengunggah file', 'error');
+                return;
+            }
+
+            // Tambahkan file ke daftar
+            data.files.forEach(f => {
+                uploadedFiles.push({
+                    id: f.id || Math.random().toString(36).substring(2),
+                    name: f.filename,
+                    size: f.size_formatted,
+                    sizeBytes: f.size_bytes,
+                    pageCount: f.page_count || 1,
+                    rotation: 0,
+                    thumbUrl: f.thumbnail_url || '',
+                    tempPath: f.temp_path
+                });
+            });
+
+            renderWorkspace();
+            showToast(`${data.files.length} file berhasil ditambahkan`, 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Terjadi kesalahan saat memproses file.', 'error');
+        }
+    }
+
+    function renderWorkspace() {
+        if (uploadedFiles.length === 0) {
+            dropzoneContainer.classList.remove('hidden');
+            workspaceContainer.classList.add('hidden');
+            topActions.classList.add('hidden');
+            return;
+        }
+
+        dropzoneContainer.classList.add('hidden');
+        workspaceContainer.classList.remove('hidden');
+        topActions.classList.remove('hidden');
+
+        filesGrid.innerHTML = '';
+        let totalPages = 0;
+
+        uploadedFiles.forEach((file, index) => {
+            totalPages += file.pageCount;
+            const card = document.createElement('div');
+            card.className = 'group relative bg-white border border-slate-200 rounded-2xl p-3 shadow-sm hover:shadow-md transition-all flex flex-col justify-between cursor-grab active:cursor-grabbing';
+            card.dataset.index = index;
+
+            // Thumbnail / Icon
+            let previewHtml = '';
+            if (file.thumbUrl) {
+                previewHtml = `<img src="${file.thumbUrl}" alt="Preview" class="w-full h-36 object-contain rounded-xl bg-slate-50 transition-transform duration-200" style="transform: rotate(${file.rotation}deg);">`;
+            } else {
+                previewHtml = `
+                    <div class="w-full h-36 rounded-xl bg-red-50/60 flex flex-col items-center justify-center text-red-500">
+                        <i data-lucide="file-text" class="w-10 h-10"></i>
+                        <span class="text-[11px] font-semibold mt-1">${file.pageCount} Hal</span>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <!-- Urutan Index Badge -->
+                <div class="absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-slate-900/80 text-white text-[11px] font-bold flex items-center justify-center shadow">
+                    ${index + 1}
+                </div>
+
+                <!-- Delete & Rotate Actions -->
+                <div class="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                    <button onclick="rotateFile(${index})" title="Putar 90°" class="w-7 h-7 rounded-lg bg-white/90 shadow text-slate-700 hover:bg-white hover:text-brand-600 flex items-center justify-center">
+                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="removeFile(${index})" title="Hapus File" class="w-7 h-7 rounded-lg bg-white/90 shadow text-slate-700 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center">
+                        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+
+                <!-- Preview Area -->
+                <div class="my-auto py-2">
+                    ${previewHtml}
+                </div>
+
+                <!-- Metadata -->
+                <div class="pt-2 border-t border-slate-100">
+                    <h4 class="text-xs font-bold text-slate-800 truncate" title="${file.name}">${file.name}</h4>
+                    <div class="flex items-center justify-between text-[10px] text-slate-400 mt-0.5">
+                        <span>${file.pageCount} Halaman</span>
+                        <span>${file.size}</span>
+                    </div>
+                </div>
+            `;
+            filesGrid.appendChild(card);
+        });
+
+        // Update Summary
+        document.getElementById('summary-file-count').innerText = uploadedFiles.length;
+        document.getElementById('summary-page-count').innerText = totalPages;
+
+        lucide.createIcons();
+
+        // Init SortableJS
+        if (sortableInstance) sortableInstance.destroy();
+        sortableInstance = new Sortable(filesGrid, {
+            animation: 200,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onEnd: function (evt) {
+                const movedItem = uploadedFiles.splice(evt.oldIndex, 1)[0];
+                uploadedFiles.splice(evt.newIndex, 0, movedItem);
+                renderWorkspace();
+            }
+        });
+    }
+
+    function removeFile(index) {
+        uploadedFiles.splice(index, 1);
+        renderWorkspace();
+    }
+
+    function rotateFile(index) {
+        uploadedFiles[index].rotation = (uploadedFiles[index].rotation + 90) % 360;
+        renderWorkspace();
+    }
+
+    function clearAllFiles() {
+        if (confirm('Hapus semua file dari daftar merge?')) {
+            uploadedFiles = [];
+            renderWorkspace();
+        }
+    }
+
+    function sortNaturally() {
+        uploadedFiles.sort((a, b) => naturalSortCompare(a.name, b.name));
+        renderWorkspace();
+        showToast('File diurutkan berdasarkan penomoran alami (A-Z / 1, 2, 10)', 'info');
+    }
+
+    async function processMerge() {
+        if (uploadedFiles.length < 1) {
+            showToast('Pilih setidaknya 1 file PDF untuk digabung.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-merge');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Memproses Penggabungan...`;
+        lucide.createIcons();
+
+        let savedLocation = null;
+
+        const payload = {
+            output_filename: document.getElementById('output-filename').value.trim() || 'merged_document.pdf',
+            custom_output_dir: document.getElementById('custom-output-dir').value.trim() || null,
+            files: uploadedFiles.map(f => ({
+                path: f.tempPath,
+                rotation: f.rotation
+            }))
+        };
+
+        try {
+            const res = await fetch('/api/merge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                showToast(data.message || 'Gagal menggabungkan PDF', 'error');
+                return;
+            }
+
+            // Show download modal
+            document.getElementById('result-meta').innerText = `${data.total_pages} Halaman digabungkan (${formatBytes(data.file_size)}).`;
+            const downloadBtn = document.getElementById('btn-download-result');
+            downloadBtn.href = data.download_url;
+            downloadBtn.download = data.filename;
+
+            // Custom saved location
+            const savedBox = document.getElementById('saved-folder-box');
+            if (data.saved_to_folder) {
+                savedLocation = data.saved_to_folder;
+                document.getElementById('saved-folder-path').innerText = data.saved_to_folder;
+                savedBox.classList.remove('hidden');
+            } else {
+                savedBox.classList.add('hidden');
+            }
+
+            document.getElementById('result-modal').classList.remove('hidden');
+            lucide.createIcons();
+        } catch (err) {
+            console.error(err);
+            showToast('Terjadi kesalahan koneksi saat memproses merge.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            lucide.createIcons();
+        }
+    }
+
+    async function openSavedFolder() {
+        const path = document.getElementById('saved-folder-path').innerText;
+        if (!path) return;
+        try {
+            const res = await fetch('/api/open-folder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: path })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Membuka folder di File Explorer...', 'info');
+            } else {
+                showToast(data.message || 'Gagal membuka folder', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function resetTool() {
+        document.getElementById('result-modal').classList.add('hidden');
+        uploadedFiles = [];
+        renderWorkspace();
+    }
+</script>
+{% endblock %}

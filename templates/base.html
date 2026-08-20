@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LocalPDF Studio - Alat PDF Lengkap & Cepat{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#e5322d',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- SortableJS -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full flex flex-col text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <a href="/" class="flex items-center gap-2.5 group">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-rose-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="font-extrabold text-xl tracking-tight text-slate-900 flex items-center gap-1">
+                                Local<span class="text-brand-500">PDF</span>
+                            </span>
+                            <span class="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">Offline Studio</span>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center gap-1">
+                    <a href="/tool/merge" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'merge' %}bg-brand-50 text-brand-600{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %} transition-colors">
+                        Merge PDF
+                    </a>
+                    <a href="/tool/image-to-pdf" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'image_to_pdf' %}bg-brand-50 text-brand-600{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %} transition-colors">
+                        Image to PDF
+                    </a>
+                    <a href="/tool/pdf-to-image" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'pdf_to_image' %}bg-brand-50 text-brand-600{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %} transition-colors">
+                        PDF to Image
+                    </a>
+                    <a href="/tool/rename" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'rename' %}bg-brand-50 text-brand-600{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %} transition-colors">
+                        Batch Rename
+                    </a>
+                    <a href="/tool/split" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'split' %}bg-brand-50 text-brand-600{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %} transition-colors">
+                        Split PDF
+                    </a>
+                    <a href="/tool/organize" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'organize' %}bg-brand-50 text-brand-600{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %} transition-colors">
+                        Organize Pages
+                    </a>
+                    <a href="/tool/compress" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'compress' %}bg-brand-50 text-brand-600{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50{% endif %} transition-colors">
+                        Compress PDF
+                    </a>
+                </nav>
+
+                <!-- Right Action / Status -->
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        100% Local & Privat
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none [&>*]:pointer-events-auto"></div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p><strong>LocalPDF Studio</strong> &copy; 2026 — Solusi pengolahan file PDF cepat & aman langsung di komputer Anda.</p>
+            <p class="text-slate-400">Semua proses berjalan secara lokal tanpa upload ke internet.</p>
+        </div>
+    </footer>
+
+    <!-- App JS -->
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Inisialisasi ikon Lucide
+        lucide.createIcons();
+    </script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

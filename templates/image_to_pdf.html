@@ -1,0 +1,943 @@
+{% extends "base.html" %}
+
+{% block title %}Image to PDF - Konversi Gambar & Gabung PDF Langsung dari Folder Lokal{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Top Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        <div>
+            <div class="flex items-center gap-2">
+                <a href="/" class="text-slate-400 hover:text-slate-600"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Image to PDF Converter</h1>
+            </div>
+            <p class="text-sm text-slate-500 mt-1">
+                Pindai folder lokal langsung tanpa upload, pratinjau resolusi tinggi (zoom), susun urutan halaman dengan drag & drop, serta otomatis gabung per N halaman atau jadi 1 file.
+            </p>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="inline-flex p-1 bg-slate-200/80 rounded-2xl self-start sm:self-auto">
+            <button id="tab-btn-local" onclick="switchSourceMode('local')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-sm flex items-center gap-1.5">
+                <i data-lucide="hard-drive" class="w-4 h-4 text-amber-600"></i> Folder Lokal Disk
+            </button>
+            <button id="tab-btn-upload" onclick="switchSourceMode('upload')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+                <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload Manual
+            </button>
+        </div>
+    </div>
+
+    <!-- SOURCE INPUT SECTION -->
+    
+    <!-- 1. Folder Lokal Input Area -->
+    <div id="source-local-container" class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <label class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <i data-lucide="folder" class="w-4 h-4 text-amber-600"></i> Masukkan Path Folder Gambar di Komputer / Harddisk:
+            </label>
+            <span class="text-[11px] text-slate-400">File diproses langsung di tempat tanpa dipindahkan</span>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+                <input type="text" id="local-folder-path" placeholder="Contoh: D:\magang\1991 - 1992 (6 -1)\file-2 atau ./jpg" class="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono">
+                <i data-lucide="folder-search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            </div>
+            <button onclick="scanLocalImagesFolder()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 transition-all">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                <span>Pindai Gambar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. Upload Dropzone Area (Hidden by default in Local Mode) -->
+    <div id="source-upload-container" class="hidden space-y-4">
+        <div id="image-dropzone" class="dropzone rounded-3xl bg-white p-8 text-center cursor-pointer flex flex-col items-center justify-center min-h-[220px]">
+            <input type="file" id="file-input" multiple accept="image/*" class="hidden">
+            <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center mb-3 ring-8 ring-amber-50/50">
+                <i data-lucide="images" class="w-7 h-7"></i>
+            </div>
+            <h4 class="text-base font-bold text-slate-800">Tarik dan letakkan gambar di sini</h4>
+            <p class="text-xs text-slate-400 mt-0.5">JPG, PNG, WEBP, BMP, TIFF</p>
+        </div>
+    </div>
+
+    <!-- WORKSPACE: Controls Bar + Sortable Grid (Left) + Settings Panel (Right) -->
+    <div id="workspace-container" class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- Left: Image Cards Grid & Toolbar (3 Cols) -->
+        <div class="lg:col-span-3 space-y-4">
+            
+            <!-- Toolbar -->
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleSelectAll()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center gap-1.5">
+                        <i data-lucide="check-square" class="w-3.5 h-3.5 text-amber-600"></i> <span id="select-all-label">Pilih Semua</span>
+                    </button>
+                    <button onclick="sortNaturally()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center gap-1.5">
+                        <i data-lucide="arrow-down-az" class="w-3.5 h-3.5 text-amber-600"></i> Urutkan Alami (1, 2, 10)
+                    </button>
+                    <button onclick="rotateAllImages()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg flex items-center gap-1.5">
+                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5 text-amber-600"></i> Putar Semua 90°
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3 text-slate-500 font-medium">
+                    <span class="flex items-center gap-1">
+                        <i data-lucide="move" class="w-3.5 h-3.5 text-slate-400"></i> Geser kartu untuk mengatur urutan halaman
+                    </span>
+                    <span class="px-2.5 py-1 bg-amber-50 text-amber-700 font-bold rounded-lg border border-amber-200">
+                        <strong id="badge-selected-count">0</strong> / <span id="badge-total-count">0</span> Dipilih
+                    </span>
+                </div>
+            </div>
+
+            <!-- SORTABLE IMAGE GRID -->
+            <div id="images-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[300px]">
+                <!-- Cards dynamically loaded -->
+                <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+                    <i data-lucide="image" class="w-12 h-12 mx-auto text-slate-300 mb-2"></i>
+                    <p class="font-medium text-sm">Belum ada gambar yang dimuat.</p>
+                    <p class="text-xs text-slate-400 mt-1">Masukkan path folder di atas atau pilih tab upload untuk memulai.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Settings & Action Panel (1 Col) -->
+        <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4 sticky top-20">
+                <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base pb-2 border-b border-slate-100">
+                    <i data-lucide="sliders" class="w-5 h-5 text-amber-600"></i> Pengaturan PDF
+                </h3>
+
+                <!-- 1. Mode Hasil (Gabungan vs Terpisah) -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-700">Mode Hasil</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="convert-mode" value="combine" checked class="peer hidden" onchange="toggleModeFields()">
+                            <div class="p-2 text-center text-xs font-semibold rounded-xl border border-slate-200 peer-checked:bg-amber-50 peer-checked:border-amber-400 peer-checked:text-amber-700">
+                                1 PDF Gabungan
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="convert-mode" value="individual" class="peer hidden" onchange="toggleModeFields()">
+                            <div class="p-2 text-center text-xs font-semibold rounded-xl border border-slate-200 peer-checked:bg-amber-50 peer-checked:border-amber-400 peer-checked:text-amber-700">
+                                PDF Terpisah
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Pengaturan Khusus PDF Terpisah (Grouping & Penamaan) -->
+                <div id="separated-settings-box" class="hidden space-y-3 p-3 bg-amber-50/60 rounded-2xl border border-amber-200 text-xs">
+                    
+                    <!-- Grouping Mode -->
+                    <div class="space-y-1.5">
+                        <label class="font-bold text-amber-950 flex items-center gap-1">
+                            <i data-lucide="boxes" class="w-3.5 h-3.5 text-amber-600"></i> Pembagian / Grouping Gambar:
+                        </label>
+                        <select id="group-type-select" onchange="updateGroupingUI()" class="w-full px-2.5 py-1.5 bg-white border border-amber-200 rounded-lg font-medium text-slate-800">
+                            <option value="auto_n" selected>Auto Grouping per N Gambar (Misal: per 2 Hal)</option>
+                            <option value="single">1 Gambar = 1 File PDF (Tunggal)</option>
+                            <option value="custom">Custom Rentang Halaman (misal: 1-2, 3-5)</option>
+                        </select>
+                    </div>
+
+                    <!-- Input N Gambar per File -->
+                    <div id="group-n-box" class="space-y-1">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[11px] font-semibold text-slate-700">Jumlah Gambar per File PDF:</span>
+                            <span class="text-[10px] text-amber-700 font-bold">(Merge per Batch)</span>
+                        </div>
+                        <input type="number" id="group-size-input" value="2" min="1" max="100" oninput="updateLiveGroupingPreview()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-bold text-amber-900">
+                        <span class="text-[10px] text-slate-500 block">Contoh: <code>2</code> menggabungkan setiap 2 halaman gambar jadi 1 file PDF.</span>
+                    </div>
+
+                    <!-- Input Custom Rentang -->
+                    <div id="group-custom-box" class="hidden space-y-1">
+                        <span class="text-[11px] font-semibold text-slate-700">Rentang Kelompok Halaman:</span>
+                        <input type="text" id="custom-groups-input" placeholder="contoh: 1-2, 3-4, 5-7" oninput="updateLiveGroupingPreview()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-mono">
+                    </div>
+
+                    <!-- Format Penamaan File Hasil -->
+                    <div class="space-y-1.5 pt-2 border-t border-amber-200/80">
+                        <label class="font-bold text-amber-950 flex items-center gap-1">
+                            <i data-lucide="tag" class="w-3.5 h-3.5 text-amber-600"></i> Format Penamaan File:
+                        </label>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="naming-mode" value="original" checked class="peer hidden" onchange="updateNamingUI()">
+                                <div class="p-1.5 text-center text-[11px] font-semibold rounded-lg border border-amber-200 bg-white peer-checked:bg-amber-200 peer-checked:border-amber-400 peer-checked:text-amber-900">
+                                    Nama File Asli
+                                </div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="naming-mode" value="sequence" class="peer hidden" onchange="updateNamingUI()">
+                                <div class="p-1.5 text-center text-[11px] font-semibold rounded-lg border border-amber-200 bg-white peer-checked:bg-amber-200 peer-checked:border-amber-400 peer-checked:text-amber-900">
+                                    Nomor Berurutan
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Sequential Numbering Inputs -->
+                    <div id="naming-seq-box" class="hidden space-y-2 pt-1">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-600">Nomor Awal (Start)</label>
+                                <input type="number" id="seq-start" value="1" min="0" oninput="updateLiveGroupingPreview()" placeholder="misal: 1, 5, 17" class="w-full px-2 py-1 bg-white border border-amber-200 rounded font-bold text-slate-800">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-600">Digit Padding</label>
+                                <input type="number" id="seq-pad" value="0" min="0" max="6" oninput="updateLiveGroupingPreview()" placeholder="0 (tanpa nol)" class="w-full px-2 py-1 bg-white border border-amber-200 rounded font-bold text-slate-800">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-600">Awalan (Prefix)</label>
+                                <input type="text" id="seq-prefix" placeholder="opsional" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white border border-amber-200 rounded text-[11px]">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-600">Akhiran (Suffix)</label>
+                                <input type="text" id="seq-suffix" placeholder="opsional" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white border border-amber-200 rounded text-[11px]">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Grouping Preview Pill Box -->
+                    <div class="p-2.5 bg-white/90 rounded-xl border border-amber-200 space-y-1">
+                        <div class="flex justify-between items-center text-[10px] font-bold text-amber-900">
+                            <span>Pratinjau Hasil File:</span>
+                            <span id="preview-total-files-badge" class="text-amber-700">0 File PDF</span>
+                        </div>
+                        <div id="preview-files-list" class="max-h-24 overflow-y-auto space-y-1 text-[10px] font-mono text-slate-600">
+                            <!-- Injected preview list -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 3. Ukuran Kertas, Orientasi & Margin -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-700">Ukuran Kertas</label>
+                        <select id="paper-size" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none">
+                            <option value="fit" selected>Fit (Asli)</option>
+                            <option value="a4">A4</option>
+                            <option value="letter">Letter</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[11px] font-bold text-slate-700">Orientasi</label>
+                        <select id="orientation" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none">
+                            <option value="auto" selected>Otomatis</option>
+                            <option value="portrait">Potret</option>
+                            <option value="landscape">Lanskap</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-700">Margin Halaman</label>
+                    <select id="margin-size" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none">
+                        <option value="none" selected>Tanpa Margin (Penuh)</option>
+                        <option value="small">Margin Kecil</option>
+                        <option value="big">Margin Besar</option>
+                    </select>
+                </div>
+
+                <!-- Output Filename (Single PDF mode) -->
+                <div id="output-name-container" class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-700">Nama File Hasil (.pdf)</label>
+                    <input type="text" id="output-filename" value="Scan_Gabungan.pdf" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono">
+                </div>
+
+                <!-- Custom Output Folder (Direct Save) -->
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-amber-600"></i> Folder Simpan Langsung (Opsional)
+                    </label>
+                    <input type="text" id="custom-output-dir" placeholder="Contoh: D:\magang\hasil" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none font-mono">
+                    <span class="text-[10px] text-slate-400 block">Jika diisi, file PDF langsung disimpan di folder ini.</span>
+                </div>
+
+                <!-- Action Button -->
+                <button id="btn-convert" onclick="processConvertAndCombine()" class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/25 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                    <i data-lucide="layers" class="w-5 h-5"></i>
+                    <span id="btn-convert-label">Gabung Menjadi 1 PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX MODAL: FULL RESOLUTION ZOOM & INSPECTION (CLICK / RIGHT CLICK) -->
+    <div id="lightbox-modal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col justify-between p-4 sm:p-6 animate-in fade-in duration-150" onclick="handleLightboxBackdrop(event)">
+        <!-- Top Toolbar -->
+        <div class="flex items-center justify-between text-white max-w-7xl w-full mx-auto pb-2 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <span id="lb-index-badge" class="px-2.5 py-1 bg-amber-500 text-slate-950 font-extrabold text-xs rounded-lg">1 / 10</span>
+                <h4 id="lb-filename" class="font-bold text-sm text-white/90 truncate max-w-md">filename.jpg</h4>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="zoomLightbox(-0.2)" title="Zoom Out" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <i data-lucide="zoom-out" class="w-5 h-5"></i>
+                </button>
+                <button onclick="resetLightboxZoom()" title="Reset Zoom" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors">
+                    <span id="lb-zoom-level">100%</span>
+                </button>
+                <button onclick="zoomLightbox(0.2)" title="Zoom In" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <i data-lucide="zoom-in" class="w-5 h-5"></i>
+                </button>
+                <button onclick="rotateLightboxImage()" title="Putar 90°" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">
+                    <i data-lucide="rotate-cw" class="w-5 h-5"></i>
+                </button>
+                <button onclick="closeLightbox()" title="Tutup (ESC)" class="p-2 rounded-xl bg-rose-600/80 hover:bg-rose-600 text-white transition-colors ml-2">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Center Image View -->
+        <div class="relative flex-1 flex items-center justify-center overflow-hidden my-4" id="lb-container">
+            <button onclick="navigateLightbox(-1)" class="absolute left-2 z-20 p-3 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur transition-all">
+                <i data-lucide="chevron-left" class="w-6 h-6"></i>
+            </button>
+
+            <div class="max-w-full max-h-full flex items-center justify-center p-2">
+                <img id="lb-image" src="" alt="Preview Full" class="max-h-[75vh] max-w-[85vw] object-contain rounded-lg shadow-2xl transition-transform duration-100 cursor-grab">
+            </div>
+
+            <button onclick="navigateLightbox(1)" class="absolute right-2 z-20 p-3 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur transition-all">
+                <i data-lucide="chevron-right" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <!-- Bottom Status -->
+        <div class="text-center text-xs text-slate-400 py-1">
+            Gunakan tombol panah ⬅️ / ➡️ pada keyboard untuk berpindah gambar &bull; Tekan ESC untuk menutup
+        </div>
+    </div>
+
+    <!-- RESULT / DOWNLOAD MODAL -->
+    <div id="result-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto ring-8 ring-emerald-50">
+                <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+            </div>
+            <div>
+                <h3 class="text-2xl font-extrabold text-slate-900">PDF Berhasil Dibuat!</h3>
+                <p id="result-meta" class="text-sm text-slate-500 mt-1">Dokumen Anda telah siap diunduh.</p>
+                <div id="saved-folder-box" class="hidden mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-left text-xs">
+                    <span class="font-bold text-emerald-800 flex items-center gap-1">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Tersimpan Langsung di Folder:
+                    </span>
+                    <span id="saved-folder-path" class="font-mono text-slate-700 block mt-1 break-all select-all"></span>
+                    <button id="btn-open-folder" onclick="openSavedFolder()" class="mt-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1">
+                        <i data-lucide="folder" class="w-3.5 h-3.5"></i> Buka Folder di File Explorer
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <a id="btn-download-result" href="#" download class="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl shadow-lg shadow-amber-500/25 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-5 h-5"></i>
+                    Unduh File Hasil
+                </a>
+                <button onclick="document.getElementById('result-modal').classList.add('hidden')" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let currentSourceMode = 'local'; // 'local' | 'upload'
+    let imageList = []; // [{id, name, path, thumbUrl, fullUrl, selected, rotation, size}]
+    let sortableInstance = null;
+    let currentLightboxIdx = 0;
+    let currentZoom = 1.0;
+
+    const sourceLocal = document.getElementById('source-local-container');
+    const sourceUpload = document.getElementById('source-upload-container');
+    const tabLocal = document.getElementById('tab-btn-local');
+    const tabUpload = document.getElementById('tab-btn-upload');
+    const imagesGrid = document.getElementById('images-grid');
+    const fileInput = document.getElementById('file-input');
+
+    setupDropzone(document.getElementById('image-dropzone'), fileInput, handleUploadedImages);
+
+    function switchSourceMode(mode) {
+        currentSourceMode = mode;
+        if (mode === 'local') {
+            tabLocal.className = 'px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-sm flex items-center gap-1.5';
+            tabUpload.className = 'px-4 py-2 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5';
+            sourceLocal.classList.remove('hidden');
+            sourceUpload.classList.add('hidden');
+        } else {
+            tabUpload.className = 'px-4 py-2 text-xs font-bold rounded-xl transition-all bg-white text-slate-900 shadow-sm flex items-center gap-1.5';
+            tabLocal.className = 'px-4 py-2 text-xs font-bold rounded-xl transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5';
+            sourceUpload.classList.remove('hidden');
+            sourceLocal.classList.add('hidden');
+        }
+    }
+
+    async function scanLocalImagesFolder() {
+        const folderPath = document.getElementById('local-folder-path').value.trim();
+        if (!folderPath) {
+            showToast('Harap masukkan path folder komputer Anda.', 'warning');
+            return;
+        }
+
+        showToast(`Memindai gambar di '${folderPath}'...`, 'info');
+        try {
+            const res = await fetch(`/api/browse-local-dir?path=${encodeURIComponent(folderPath)}`);
+            const data = await res.json();
+
+            if (!data.success) {
+                showToast(data.message || 'Folder tidak ditemukan', 'error');
+                return;
+            }
+
+            const imageFiles = data.files.filter(f => f.is_image);
+            if (imageFiles.length === 0) {
+                showToast('Tidak ada file gambar (.jpg, .png, .webp, .bmp, .tif) di folder ini.', 'warning');
+                return;
+            }
+
+            imageList = imageFiles.map((f, idx) => ({
+                id: `local_${idx}_${Math.random().toString(36).substr(2, 5)}`,
+                name: f.name,
+                path: f.path,
+                thumbUrl: f.thumb_url,
+                fullUrl: f.preview_url,
+                selected: true,
+                rotation: 0,
+                size: f.size_formatted
+            }));
+
+            renderImageGrid();
+            showToast(`Berhasil memuat ${imageList.length} gambar dari folder lokal!`, 'success');
+        } catch (err) {
+            console.error(err);
+            showToast('Gagal memindai folder lokal.', 'error');
+        }
+    }
+
+    async function handleUploadedImages(files) {
+        if (!files || files.length === 0) return;
+
+        showToast(`Mengunggah ${files.length} file gambar...`, 'info');
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('files', files[i]);
+        }
+
+        try {
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.success) {
+                data.files.forEach((f, idx) => {
+                    imageList.push({
+                        id: f.id || `up_${idx}`,
+                        name: f.filename,
+                        path: f.temp_path,
+                        thumbUrl: f.thumbnail_url,
+                        fullUrl: f.thumbnail_url,
+                        selected: true,
+                        rotation: 0,
+                        size: f.size_formatted
+                    });
+                });
+
+                renderImageGrid();
+                showToast(`${data.files.length} gambar siap disusun`, 'success');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast('Gagal memproses file upload.', 'error');
+        }
+    }
+
+    function toggleModeFields() {
+        const mode = document.querySelector('input[name="convert-mode"]:checked').value;
+        const separatedBox = document.getElementById('separated-settings-box');
+        const outContainer = document.getElementById('output-name-container');
+
+        if (mode === 'combine') {
+            separatedBox.classList.add('hidden');
+            outContainer.classList.remove('hidden');
+            document.getElementById('output-filename').value = 'Scan_Gabungan.pdf';
+        } else {
+            separatedBox.classList.remove('hidden');
+            outContainer.classList.add('hidden');
+        }
+        updateCounts();
+        renderImageGrid();
+    }
+
+    function updateGroupingUI() {
+        const gType = document.getElementById('group-type-select').value;
+        document.getElementById('group-n-box').classList.toggle('hidden', gType !== 'auto_n');
+        document.getElementById('group-custom-box').classList.toggle('hidden', gType !== 'custom');
+        updateLiveGroupingPreview();
+        renderImageGrid();
+    }
+
+    function updateNamingUI() {
+        const nMode = document.querySelector('input[name="naming-mode"]:checked').value;
+        document.getElementById('naming-seq-box').classList.toggle('hidden', nMode !== 'sequence');
+        updateLiveGroupingPreview();
+    }
+
+    function getActiveGrouping() {
+        const mode = document.querySelector('input[name="convert-mode"]:checked').value;
+        const selectedItems = imageList.filter(i => i.selected);
+
+        if (mode === 'combine') {
+            return {
+                mode: 'combine',
+                groups: [selectedItems.map((_, idx) => idx)]
+            };
+        }
+
+        const gType = document.getElementById('group-type-select').value;
+        let groupSize = 1;
+        let customStr = '';
+
+        if (gType === 'auto_n') {
+            groupSize = Math.max(1, parseInt(document.getElementById('group-size-input').value) || 1);
+        } else if (gType === 'custom') {
+            customStr = document.getElementById('custom-groups-input').value.trim();
+        }
+
+        // Generate groups index
+        const total = selectedItems.length;
+        let groups = [];
+        if (customStr) {
+            const parts = customStr.split(',').map(s => s.trim()).filter(Boolean);
+            parts.forEach(p => {
+                if (p.includes('-')) {
+                    const [s, e] = p.split('-').map(x => parseInt(x.trim()));
+                    if (!isNaN(s) && !isNaN(e)) {
+                        const grp = [];
+                        for (let i = Math.min(s, e); i <= Math.max(s, e); i++) {
+                            if (i >= 1 && i <= total) grp.push(i - 1);
+                        }
+                        if (grp.length) groups.push(grp);
+                    }
+                } else {
+                    const s = parseInt(p);
+                    if (!isNaN(s) && s >= 1 && s <= total) groups.push([s - 1]);
+                }
+            });
+        }
+        
+        if (groups.length === 0) {
+            for (let i = 0; i < total; i += groupSize) {
+                const grp = [];
+                for (let j = i; j < Math.min(i + groupSize, total); j++) {
+                    grp.push(j);
+                }
+                groups.push(grp);
+            }
+        }
+
+        return {
+            mode: 'individual',
+            groupSize: groupSize,
+            customStr: customStr,
+            groups: groups
+        };
+    }
+
+    function updateLiveGroupingPreview() {
+        const selectedItems = imageList.filter(i => i.selected);
+        const previewList = document.getElementById('preview-files-list');
+        const badgeTotal = document.getElementById('preview-total-files-badge');
+
+        if (selectedItems.length === 0) {
+            badgeTotal.innerText = '0 File';
+            previewList.innerHTML = '<span class="text-slate-400 italic">Belum ada gambar yang dipilih</span>';
+            return;
+        }
+
+        const grouping = getActiveGrouping();
+        const groups = grouping.groups;
+        badgeTotal.innerText = `${groups.length} File PDF`;
+
+        const nMode = document.querySelector('input[name="naming-mode"]:checked').value;
+        const startNum = parseInt(document.getElementById('seq-start').value) || 1;
+        const pad = parseInt(document.getElementById('seq-pad').value) || 0;
+        const prefix = document.getElementById('seq-prefix').value.trim();
+        const suffix = document.getElementById('seq-suffix').value.trim();
+
+        let html = '';
+        groups.forEach((indices, gIdx) => {
+            let filename = '';
+            if (nMode === 'sequence') {
+                const curVal = startNum + gIdx;
+                const numStr = pad > 0 ? String(curVal).padStart(pad, '0') : String(curVal);
+                filename = `${prefix}${numStr}${suffix}.pdf`;
+            } else {
+                if (indices.length === 1) {
+                    const base = selectedItems[indices[0]].name.replace(/\.[^/.]+$/, "");
+                    filename = `${base}.pdf`;
+                } else {
+                    const firstBase = selectedItems[indices[0]].name.replace(/\.[^/.]+$/, "");
+                    const lastBase = selectedItems[indices[indices.length - 1]].name.replace(/\.[^/.]+$/, "");
+                    filename = (firstBase === lastBase) ? `${firstBase}_${gIdx + 1}.pdf` : `${firstBase}_${lastBase}.pdf`;
+                }
+            }
+
+            const pageLabels = indices.map(i => `Hal ${i + 1}`).join(', ');
+            html += `
+                <div class="flex items-center justify-between py-0.5 border-b border-amber-100/60">
+                    <span class="font-bold text-amber-950 truncate max-w-[130px]" title="${filename}">📄 ${filename}</span>
+                    <span class="text-[9px] text-amber-700 bg-amber-100/80 px-1.5 py-0.5 rounded">${indices.length} Hal (${pageLabels})</span>
+                </div>
+            `;
+        });
+
+        previewList.innerHTML = html;
+    }
+
+    function renderImageGrid() {
+        if (imageList.length === 0) {
+            imagesGrid.innerHTML = `
+                <div class="col-span-full py-16 text-center text-slate-400 bg-white rounded-2xl border border-dashed border-slate-200">
+                    <i data-lucide="image" class="w-12 h-12 mx-auto text-slate-300 mb-2"></i>
+                    <p class="font-medium text-sm">Belum ada gambar yang dimuat.</p>
+                </div>
+            `;
+            updateCounts();
+            lucide.createIcons();
+            return;
+        }
+
+        imagesGrid.innerHTML = '';
+        const mode = document.querySelector('input[name="convert-mode"]:checked').value;
+        const grouping = getActiveGrouping();
+        const selectedItems = imageList.filter(i => i.selected);
+
+        // Map item to group info
+        const itemGroupMap = new Map();
+        if (mode !== 'combine') {
+            grouping.groups.forEach((indices, gIdx) => {
+                indices.forEach((selIdx, pageInGrp) => {
+                    const actualItem = selectedItems[selIdx];
+                    if (actualItem) {
+                        itemGroupMap.set(actualItem.id, {
+                            groupNumber: gIdx + 1,
+                            pageInGroup: pageInGrp + 1,
+                            totalInGroup: indices.length
+                        });
+                    }
+                });
+            });
+        }
+
+        let selectedIndexCount = 0;
+
+        imageList.forEach((item, index) => {
+            if (item.selected) selectedIndexCount++;
+
+            const card = document.createElement('div');
+            card.className = `group relative bg-white border ${item.selected ? 'border-amber-300 ring-2 ring-amber-400/20 shadow-sm' : 'border-slate-200 opacity-50'} rounded-2xl p-2.5 transition-all flex flex-col justify-between cursor-grab active:cursor-grabbing hover:shadow-md`;
+            card.dataset.index = index;
+
+            // Right click handler for instant big preview
+            card.oncontextmenu = (e) => {
+                e.preventDefault();
+                openLightbox(index);
+            };
+
+            let groupBadgeHtml = '';
+            if (item.selected && mode !== 'combine' && itemGroupMap.has(item.id)) {
+                const gInfo = itemGroupMap.get(item.id);
+                groupBadgeHtml = `
+                    <span class="px-1.5 py-0.5 bg-amber-100 text-amber-800 font-bold text-[9px] rounded-md border border-amber-300">
+                        File #${gInfo.groupNumber} (${gInfo.pageInGroup}/${gInfo.totalInGroup})
+                    </span>
+                `;
+            }
+
+            card.innerHTML = `
+                <!-- Top Checkbox & Page Badge -->
+                <div class="flex items-center justify-between mb-1.5 z-10">
+                    <label class="flex items-center gap-1.5 cursor-pointer" onclick="event.stopPropagation()">
+                        <input type="checkbox" ${item.selected ? 'checked' : ''} onchange="toggleItemSelection(${index})" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-400">
+                        <span class="text-[11px] font-bold ${item.selected ? 'text-amber-700' : 'text-slate-400'}">
+                            ${item.selected ? `Hal ${selectedIndexCount}` : 'Diabaikan'}
+                        </span>
+                    </label>
+
+                    <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+                        <button onclick="event.stopPropagation(); rotateImageItem(${index})" title="Putar 90°" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center">
+                            <i data-lucide="rotate-cw" class="w-3 h-3"></i>
+                        </button>
+                        <button onclick="event.stopPropagation(); openLightbox(${index})" title="Klik untuk lihat lebih besar (Zoom)" class="w-6 h-6 rounded bg-amber-50 hover:bg-amber-100 text-amber-700 flex items-center justify-center">
+                            <i data-lucide="zoom-in" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Thumbnail Clickable to Zoom -->
+                <div class="my-auto py-1 cursor-zoom-in" onclick="openLightbox(${index})" title="Klik untuk pratinjau resolusi tinggi">
+                    <div class="w-full h-36 bg-slate-100/70 rounded-xl flex items-center justify-center overflow-hidden border border-slate-200/60">
+                        <img src="${item.thumbUrl}" alt="${item.name}" class="w-full h-full object-contain transition-transform duration-200" style="transform: rotate(${item.rotation}deg)">
+                    </div>
+                </div>
+
+                <!-- Footer Metadata & Group Tag -->
+                <div class="pt-2 border-t border-slate-100 space-y-1">
+                    <div class="flex items-center justify-between text-[10px]">
+                        <span class="font-bold text-slate-800 truncate max-w-[110px]" title="${item.name}">${item.name}</span>
+                        <span class="text-slate-400">${item.size}</span>
+                    </div>
+                    ${groupBadgeHtml ? `<div class="text-center pt-0.5">${groupBadgeHtml}</div>` : ''}
+                </div>
+            `;
+            imagesGrid.appendChild(card);
+        });
+
+        updateCounts();
+        updateLiveGroupingPreview();
+        lucide.createIcons();
+
+        // SortableJS Drag & Drop Reorder
+        if (sortableInstance) sortableInstance.destroy();
+        sortableInstance = new Sortable(imagesGrid, {
+            animation: 200,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onEnd: function (evt) {
+                const moved = imageList.splice(evt.oldIndex, 1)[0];
+                imageList.splice(evt.newIndex, 0, moved);
+                renderImageGrid();
+            }
+        });
+    }
+
+    function toggleItemSelection(index) {
+        imageList[index].selected = !imageList[index].selected;
+        renderImageGrid();
+    }
+
+    function toggleSelectAll() {
+        const allSelected = imageList.every(i => i.selected);
+        imageList.forEach(i => i.selected = !allSelected);
+        document.getElementById('select-all-label').innerText = allSelected ? 'Pilih Semua' : 'Batal Pilih Semua';
+        renderImageGrid();
+    }
+
+    function sortNaturally() {
+        imageList.sort((a, b) => naturalSortCompare(a.name, b.name));
+        renderImageGrid();
+        showToast('Gambar diurutkan secara alami (1, 2, 10)', 'info');
+    }
+
+    function rotateImageItem(index) {
+        imageList[index].rotation = (imageList[index].rotation + 90) % 360;
+        renderImageGrid();
+    }
+
+    function rotateAllImages() {
+        imageList.forEach(i => i.rotation = (i.rotation + 90) % 360);
+        renderImageGrid();
+    }
+
+    function updateCounts() {
+        const selected = imageList.filter(i => i.selected).length;
+        document.getElementById('badge-selected-count').innerText = selected;
+        document.getElementById('badge-total-count').innerText = imageList.length;
+
+        const mode = document.querySelector('input[name="convert-mode"]:checked').value;
+        if (mode === 'combine') {
+            document.getElementById('btn-convert-label').innerText = selected > 1 ? `Gabung ${selected} Gambar Menjadi 1 PDF` : `Konversi ke PDF`;
+        } else {
+            const grouping = getActiveGrouping();
+            document.getElementById('btn-convert-label').innerText = `Proses ${grouping.groups.length} File PDF`;
+        }
+    }
+
+    // LIGHTBOX FUNCTIONS (Zoom & Inspection)
+    function openLightbox(index) {
+        if (!imageList[index]) return;
+        currentLightboxIdx = index;
+        currentZoom = 1.0;
+
+        const item = imageList[index];
+        document.getElementById('lb-filename').innerText = item.name;
+        document.getElementById('lb-index-badge').innerText = `${index + 1} / ${imageList.length}`;
+        
+        const lbImg = document.getElementById('lb-image');
+        lbImg.src = item.fullUrl || item.thumbUrl;
+        lbImg.style.transform = `scale(${currentZoom}) rotate(${item.rotation}deg)`;
+        document.getElementById('lb-zoom-level').innerText = `${Math.round(currentZoom * 100)}%`;
+
+        document.getElementById('lightbox-modal').classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox-modal').classList.add('hidden');
+    }
+
+    function handleLightboxBackdrop(e) {
+        if (e.target.id === 'lightbox-modal' || e.target.id === 'lb-container') {
+            closeLightbox();
+        }
+    }
+
+    function zoomLightbox(delta) {
+        currentZoom = Math.min(3.0, Math.max(0.4, currentZoom + delta));
+        const item = imageList[currentLightboxIdx];
+        document.getElementById('lb-image').style.transform = `scale(${currentZoom}) rotate(${item ? item.rotation : 0}deg)`;
+        document.getElementById('lb-zoom-level').innerText = `${Math.round(currentZoom * 100)}%`;
+    }
+
+    function resetLightboxZoom() {
+        currentZoom = 1.0;
+        const item = imageList[currentLightboxIdx];
+        document.getElementById('lb-image').style.transform = `scale(${currentZoom}) rotate(${item ? item.rotation : 0}deg)`;
+        document.getElementById('lb-zoom-level').innerText = '100%';
+    }
+
+    function rotateLightboxImage() {
+        if (imageList[currentLightboxIdx]) {
+            imageList[currentLightboxIdx].rotation = (imageList[currentLightboxIdx].rotation + 90) % 360;
+            const item = imageList[currentLightboxIdx];
+            document.getElementById('lb-image').style.transform = `scale(${currentZoom}) rotate(${item.rotation}deg)`;
+            renderImageGrid();
+        }
+    }
+
+    function navigateLightbox(step) {
+        let nextIdx = currentLightboxIdx + step;
+        if (nextIdx < 0) nextIdx = imageList.length - 1;
+        if (nextIdx >= imageList.length) nextIdx = 0;
+        openLightbox(nextIdx);
+    }
+
+    // Keyboard Shortcuts for Lightbox
+    window.addEventListener('keydown', (e) => {
+        const lb = document.getElementById('lightbox-modal');
+        if (!lb.classList.contains('hidden')) {
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        }
+    });
+
+    // EXECUTE CONVERT & COMBINE / GROUPING
+    async function processConvertAndCombine() {
+        const selectedItems = imageList.filter(i => i.selected);
+        if (selectedItems.length === 0) {
+            showToast('Pilih setidaknya 1 gambar untuk diproses.', 'warning');
+            return;
+        }
+
+        const btn = document.getElementById('btn-convert');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Memproses ${selectedItems.length} Gambar...`;
+        lucide.createIcons();
+
+        const mode = document.querySelector('input[name="convert-mode"]:checked').value;
+        const gType = document.getElementById('group-type-select').value;
+        const groupSize = (gType === 'auto_n') ? (parseInt(document.getElementById('group-size-input').value) || 1) : 1;
+        const customStr = (gType === 'custom') ? document.getElementById('custom-groups-input').value.trim() : null;
+        
+        const nMode = document.querySelector('input[name="naming-mode"]:checked').value;
+        const startNum = parseInt(document.getElementById('seq-start').value) || 1;
+        const pad = parseInt(document.getElementById('seq-pad').value) || 0;
+        const prefix = document.getElementById('seq-prefix').value.trim();
+        const suffix = document.getElementById('seq-suffix').value.trim();
+
+        const payload = {
+            images: selectedItems.map(i => ({
+                path: i.path,
+                rotation: i.rotation
+            })),
+            mode: mode,
+            paper_size: document.getElementById('paper-size').value,
+            orientation: document.getElementById('orientation').value,
+            margin_size: document.getElementById('margin-size').value,
+            output_filename: document.getElementById('output-filename').value.trim() || 'Scan_Gabungan.pdf',
+            group_size: groupSize,
+            custom_groups_str: customStr,
+            naming_mode: nMode,
+            prefix: prefix,
+            start_num: startNum,
+            padding: pad,
+            suffix: suffix,
+            custom_output_dir: document.getElementById('custom-output-dir').value.trim() || null
+        };
+
+        try {
+            const res = await fetch('/api/image-to-pdf', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                showToast(data.message || 'Gagal memproses PDF', 'error');
+                return;
+            }
+
+            const filesWord = data.total_files > 1 ? `${data.total_files} File PDF` : `1 File PDF`;
+            document.getElementById('result-meta').innerText = `${data.total_images} Gambar berhasil diproses menjadi ${filesWord} (${formatBytes(data.file_size)}).`;
+            const downloadBtn = document.getElementById('btn-download-result');
+            downloadBtn.href = data.download_url;
+            downloadBtn.download = data.filename;
+
+            // Direct Save destination
+            const savedBox = document.getElementById('saved-folder-box');
+            if (data.saved_to_folder) {
+                document.getElementById('saved-folder-path').innerText = data.saved_to_folder;
+                savedBox.classList.remove('hidden');
+            } else {
+                savedBox.classList.add('hidden');
+            }
+
+            document.getElementById('result-modal').classList.remove('hidden');
+            lucide.createIcons();
+        } catch (err) {
+            console.error(err);
+            showToast('Terjadi kesalahan saat memproses PDF.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            lucide.createIcons();
+        }
+    }
+
+    async function openSavedFolder() {
+        const path = document.getElementById('saved-folder-path').innerText;
+        if (!path) return;
+        try {
+            const res = await fetch('/api/open-folder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: path })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast('Membuka folder di File Explorer...', 'info');
+            } else {
+                showToast(data.message || 'Gagal membuka folder', 'error');
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+</script>
+{% endblock %}

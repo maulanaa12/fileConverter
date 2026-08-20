@@ -1,0 +1,117 @@
+/**
+ * LocalPDF Studio - Global JavaScript Utilities
+ */
+
+// Toast Notification Manager
+function showToast(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all transform duration-300 translate-y-2 opacity-0 text-white`;
+
+    let bgColor = 'bg-slate-900';
+    let iconSvg = '';
+
+    if (type === 'success') {
+        bgColor = 'bg-emerald-600';
+        iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+    } else if (type === 'error') {
+        bgColor = 'bg-rose-600';
+        iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+    } else if (type === 'warning') {
+        bgColor = 'bg-amber-600';
+        iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+    } else {
+        bgColor = 'bg-slate-800';
+        iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+    }
+
+    toast.classList.add(bgColor);
+    toast.innerHTML = `
+        ${iconSvg}
+        <span class="flex-1">${message}</span>
+        <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white p-0.5 rounded-lg">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    `;
+
+    container.appendChild(toast);
+
+    // Animate in
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+    });
+
+    // Auto remove
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
+
+// Format bytes helper
+function formatBytes(bytes, decimals = 1) {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+// Natural Sort function for filenames in JavaScript
+function naturalSortCompare(a, b) {
+    return String(a || '').localeCompare(String(b || ''), undefined, { numeric: true, sensitivity: 'base' });
+}
+
+// Download Helper
+function triggerDownload(url, filename) {
+    const a = document.createElement('a');
+    a.href = url;
+    if (filename) a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// Setup common dropzone drag-and-drop
+function setupDropzone(dropzoneEl, fileInputEl, onFilesSelected) {
+    if (!dropzoneEl || !fileInputEl) return;
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzoneEl.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzoneEl.classList.add('dragover');
+        }, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzoneEl.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropzoneEl.classList.remove('dragover');
+        }, false);
+    });
+
+    dropzoneEl.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length > 0 && typeof onFilesSelected === 'function') {
+            onFilesSelected(Array.from(dt.files));
+        }
+    });
+
+    // Clicking anywhere on the dropzone or its button triggers the file input dialog
+    dropzoneEl.addEventListener('click', (e) => {
+        if (e.target === fileInputEl) return;
+        fileInputEl.click();
+    });
+
+    fileInputEl.addEventListener('change', () => {
+        if (fileInputEl.files && fileInputEl.files.length > 0 && typeof onFilesSelected === 'function') {
+            onFilesSelected(Array.from(fileInputEl.files));
+        }
+        fileInputEl.value = ''; // Reset so the user can re-select the same file(s)
+    });
+}

@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --primary: #e5322d;
+    --primary-hover: #cb241f;
+    --primary-light: #fef2f2;
+    --primary-border: #fecaca;
+    --dark-bg: #0f172a;
+    --dark-card: #1e293b;
+    --dark-border: #334155;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Dropzone styling */
+.dropzone {
+    border: 2px dashed #cbd5e1;
+    transition: all 0.25s ease;
+}
+.dropzone.dragover {
+    border-color: #e5322d;
+    background-color: #fef2f2;
+    transform: scale(1.01);
+}
+
+/* Sortable items animation */
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: #fee2e2 !important;
+    border: 2px dashed #e5322d !important;
+}
+
+.sortable-chosen {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+}
+
+/* Tool card hover */
+.tool-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+/* Pulse animation for processing */
+@keyframes pulse-subtle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+.animate-pulse-subtle {
+    animation: pulse-subtle 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Badge colors */
+.badge-pdf { background-color: #fee2e2; color: #b91c1c; }
+.badge-img { background-color: #e0f2fe; color: #0369a1; }
+.badge-zip { background-color: #fef3c7; color: #b45309; }
