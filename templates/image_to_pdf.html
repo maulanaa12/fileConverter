@@ -150,14 +150,14 @@
                             <span class="text-[11px] font-semibold text-slate-700">Jumlah Gambar per File PDF:</span>
                             <span class="text-[10px] text-amber-700 font-bold">(Merge per Batch)</span>
                         </div>
-                        <input type="number" id="group-size-input" value="2" min="1" max="100" oninput="updateLiveGroupingPreview()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-bold text-amber-900">
+                        <input type="number" id="group-size-input" value="2" min="1" max="100" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-bold text-amber-900">
                         <span class="text-[10px] text-slate-500 block">Contoh: <code>2</code> menggabungkan setiap 2 halaman gambar jadi 1 file PDF.</span>
                     </div>
 
                     <!-- Input Custom Rentang -->
                     <div id="group-custom-box" class="hidden space-y-1">
                         <span class="text-[11px] font-semibold text-slate-700">Rentang Kelompok Halaman:</span>
-                        <input type="text" id="custom-groups-input" placeholder="contoh: 1-2, 3-4, 5-7" oninput="updateLiveGroupingPreview()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-mono">
+                        <input type="text" id="custom-groups-input" placeholder="contoh: 1-2, 3-4, 5-7" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-mono">
                     </div>
 
                     <!-- Format Penamaan File Hasil -->
@@ -485,7 +485,10 @@
         const gType = document.getElementById('group-type-select').value;
         document.getElementById('group-n-box').classList.toggle('hidden', gType !== 'auto_n');
         document.getElementById('group-custom-box').classList.toggle('hidden', gType !== 'custom');
-        updateLiveGroupingPreview();
+        renderImageGrid();
+    }
+
+    function onGroupingSettingsChange() {
         renderImageGrid();
     }
 
