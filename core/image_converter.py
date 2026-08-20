@@ -74,9 +74,12 @@ def create_image_groups(
 ) -> List[List[int]]:
     """
     Mengembalikan list of list indices (0-indexed) untuk pembagian kelompok gambar.
-    Jika custom_groups_str diisi (misal '105-108'), halaman yang berada di dalam rentang
-    akan digabungkan menjadi 1 file PDF, sedangkan halaman lainnya tetap menjadi 1 halaman per file PDF.
+    Jika custom_groups_str diisi (misal '105-108'), halaman di dalam rentang
+    akan digabungkan sesuai rentang tersebut, sedangkan halaman lainnya di luar rentang
+    akan digabungkan sesuai default `group_size` (misal per 1, 2, 3, dst.).
     """
+    g_size = max(1, group_size)
+
     if custom_groups_str and custom_groups_str.strip():
         explicit_ranges = []
         parts = [p.strip() for p in custom_groups_str.split(",") if p.strip()]
@@ -109,7 +112,7 @@ def create_image_groups(
             range_ptr = 0
 
             while cur_p <= total_images:
-                # Cari apakah cur_p cocok dengan rentang kustom
+                # Cek apakah cur_p cocok dengan rentang khusus
                 matched_range = None
                 while range_ptr < len(explicit_ranges):
                     r_start, r_end = explicit_ranges[range_ptr]
@@ -127,13 +130,25 @@ def create_image_groups(
                     cur_p = r_end + 1
                     range_ptr += 1
                 else:
-                    groups.append([cur_p - 1])
-                    cur_p += 1
+                    # Halaman reguler: kelompokkan per g_size tanpa melompati rentang khusus berikutnya
+                    next_start = None
+                    if range_ptr < len(explicit_ranges):
+                        next_start = explicit_ranges[range_ptr][0]
+
+                    if next_start and next_start > cur_p:
+                        max_avail = next_start - cur_p
+                        chunk_len = min(g_size, max_avail)
+                    else:
+                        max_avail = total_images - cur_p + 1
+                        chunk_len = min(g_size, max_avail)
+
+                    grp = [p - 1 for p in range(cur_p, cur_p + chunk_len)]
+                    groups.append(grp)
+                    cur_p += chunk_len
 
             return groups
 
-    # Auto group size
-    g_size = max(1, group_size)
+    # Auto group size murni
     groups = []
     for i in range(0, total_images, g_size):
         groups.append(list(range(i, min(i + g_size, total_images))))

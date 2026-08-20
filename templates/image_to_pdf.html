@@ -154,10 +154,25 @@
                         <span class="text-[10px] text-slate-500 block">Contoh: <code>2</code> menggabungkan setiap 2 halaman gambar jadi 1 file PDF.</span>
                     </div>
 
-                    <!-- Input Custom Rentang -->
-                    <div id="group-custom-box" class="hidden space-y-1">
-                        <span class="text-[11px] font-semibold text-slate-700">Rentang Kelompok Halaman:</span>
-                        <input type="text" id="custom-groups-input" placeholder="contoh: 1-2, 3-4, 5-7" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-mono">
+                    <!-- Input Custom Rentang & Default Grouping -->
+                    <div id="group-custom-box" class="hidden space-y-2.5">
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] font-semibold text-slate-700">Default Grouping (Selain Rentang):</span>
+                                <span class="text-[10px] text-amber-700 font-bold">(Gambar / File)</span>
+                            </div>
+                            <input type="number" id="custom-default-group-size" value="1" min="1" max="100" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-bold text-amber-900">
+                            <span class="text-[10px] text-slate-500 block">Misal <code>2</code>: halaman lainnya digabung per 2 hal; <code>1</code>: 1 hal per file.</span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] font-semibold text-slate-700">Rentang Khusus (Pengecualian):</span>
+                                <span class="text-[10px] text-amber-700 font-bold">(Digabung Jadi 1 PDF)</span>
+                            </div>
+                            <input type="text" id="custom-groups-input" placeholder="contoh: 105-108, 115-118" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg font-mono">
+                            <span class="text-[10px] text-slate-500 block">Halaman-halaman dalam rentang ini akan digabung menjadi 1 file PDF.</span>
+                        </div>
                     </div>
 
                     <!-- Format Penamaan File Hasil -->
@@ -517,6 +532,7 @@
             groupSize = Math.max(1, parseInt(document.getElementById('group-size-input').value) || 1);
         } else if (gType === 'custom') {
             customStr = document.getElementById('custom-groups-input').value.trim();
+            groupSize = Math.max(1, parseInt(document.getElementById('custom-default-group-size').value) || 1);
         }
 
         const total = selectedItems.length;
@@ -572,8 +588,27 @@
                         curP = rEnd + 1;
                         rangePtr++;
                     } else {
-                        groups.push([curP - 1]);
-                        curP++;
+                        // Regular pages: group by default groupSize without exceeding next custom range
+                        let nextStart = null;
+                        if (rangePtr < explicitRanges.length) {
+                            nextStart = explicitRanges[rangePtr][0];
+                        }
+
+                        let chunkLen = groupSize;
+                        if (nextStart && nextStart > curP) {
+                            const maxAvail = nextStart - curP;
+                            chunkLen = Math.min(groupSize, maxAvail);
+                        } else {
+                            const maxAvail = total - curP + 1;
+                            chunkLen = Math.min(groupSize, maxAvail);
+                        }
+
+                        const grp = [];
+                        for (let p = curP; p < curP + chunkLen; p++) {
+                            grp.push(p - 1);
+                        }
+                        groups.push(grp);
+                        curP += chunkLen;
                     }
                 }
             }
@@ -897,7 +932,11 @@
 
         const mode = document.querySelector('input[name="convert-mode"]:checked').value;
         const gType = document.getElementById('group-type-select').value;
-        const groupSize = (gType === 'auto_n') ? (parseInt(document.getElementById('group-size-input').value) || 1) : 1;
+        const groupSize = (gType === 'auto_n') 
+            ? (parseInt(document.getElementById('group-size-input').value) || 1) 
+            : (gType === 'custom') 
+                ? (parseInt(document.getElementById('custom-default-group-size').value) || 1) 
+                : 1;
         const customStr = (gType === 'custom') ? document.getElementById('custom-groups-input').value.trim() : null;
         
         const nMode = document.querySelector('input[name="naming-mode"]:checked').value;
