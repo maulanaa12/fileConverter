@@ -5,26 +5,26 @@
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6">
     <!-- Header Tool -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
             <div class="flex items-center gap-2">
-                <a href="/" class="text-slate-400 hover:text-slate-600"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Compress PDF</h1>
+                <a href="/" class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Compress PDF</h1>
             </div>
-            <p class="text-sm text-slate-500 mt-1">Perkecil ukuran dokumen PDF tanpa mengurangi kualitas teks dan gambar secara berlebihan.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Perkecil ukuran dokumen PDF tanpa mengurangi kualitas teks dan gambar secara berlebihan.</p>
         </div>
     </div>
 
     <!-- Dropzone Area -->
     <div id="dropzone-container" class="space-y-4">
-        <div id="compress-dropzone" class="dropzone rounded-3xl bg-white p-12 text-center cursor-pointer flex flex-col items-center justify-center min-h-[320px]">
+        <div id="compress-dropzone" class="dropzone rounded-3xl bg-white dark:bg-slate-900/60 p-12 text-center cursor-pointer flex flex-col items-center justify-center min-h-[320px]">
             <input type="file" id="file-input" accept=".pdf,application/pdf" class="hidden">
-            <div class="w-20 h-20 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center mb-4 ring-8 ring-teal-50/50">
+            <div class="w-20 h-20 rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400 flex items-center justify-center mb-4 ring-8 ring-brand-50/50 dark:ring-brand-500/10">
                 <i data-lucide="minimize-2" class="w-10 h-10"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-800">Pilih 1 file PDF yang ingin dikompres</h3>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">Pilih 1 file PDF yang ingin dikompres</h3>
             <p class="text-sm text-slate-500 mt-1 max-w-md">Tarik file PDF ke sini atau klik untuk memilih dari komputer</p>
-            <button type="button" class="mt-6 px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl shadow-lg shadow-teal-600/25 transition-all transform active:scale-95 flex items-center gap-2">
+            <button type="button" class="mt-6 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 dark:shadow-none transition-all transform active:scale-95 flex items-center gap-2">
                 <i data-lucide="folder-open" class="w-5 h-5"></i>
                 Pilih File PDF
             </button>
@@ -36,21 +36,21 @@
         
         <!-- Left: File Info -->
         <div class="lg:col-span-3 space-y-4">
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center">
+                    <div class="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-500/15 text-brand-600 dark:text-brand-400 flex items-center justify-center">
                         <i data-lucide="file-text" class="w-7 h-7"></i>
                     </div>
                     <div>
-                        <h4 id="pdf-name" class="font-bold text-slate-900 text-base">dokumen.pdf</h4>
-                        <div class="flex items-center gap-3 text-xs text-slate-400 mt-1">
-                            <span id="pdf-size" class="font-semibold text-slate-700">2.5 MB</span>
+                        <h4 id="pdf-name" class="font-bold text-slate-900 dark:text-white text-base">dokumen.pdf</h4>
+                        <div class="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500 mt-1">
+                            <span id="pdf-size" class="font-semibold text-slate-700 dark:text-slate-300">2.5 MB</span>
                             <span>&bull;</span>
                             <span id="pdf-pages">10 Halaman</span>
                         </div>
                     </div>
                 </div>
-                <button onclick="resetTool()" class="text-xs font-semibold text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-xl">
+                <button onclick="resetTool()" class="text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10 px-3 py-2 rounded-xl">
                     Ganti PDF
                 </button>
             </div>
@@ -58,15 +58,15 @@
 
         <!-- Right: Compress Action Panel -->
         <div class="lg:col-span-1 space-y-4">
-            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5 sticky top-24">
-                <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base">
-                    <i data-lucide="zap" class="w-5 h-5 text-teal-600"></i> Tingkat Kompresi
+            <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5 sticky top-24">
+                <h3 class="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-base">
+                    <i data-lucide="zap" class="w-5 h-5 text-brand-600 dark:text-brand-400"></i> Tingkat Kompresi
                 </h3>
 
                 <div class="space-y-2">
                     <label class="cursor-pointer block">
                         <input type="radio" name="compress-level" value="medium" checked class="peer hidden">
-                        <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 peer-checked:bg-teal-50 peer-checked:border-teal-400 peer-checked:text-teal-800">
+                        <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300 transition-colors cursor-pointer">
                             ⚡ Kompresi Optimal (Rekomendasi)
                         </div>
                     </label>
@@ -74,15 +74,15 @@
 
                 <!-- Custom Output Folder (Optional) -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
-                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-teal-600"></i> Simpan Langsung ke Folder (Opsional)
+                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Simpan Langsung ke Folder (Opsional)
                     </label>
-                    <input type="text" id="custom-output-dir" placeholder="Contoh: D:\hasil_compress atau ./file" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:outline-none font-mono">
-                    <span class="text-[10px] text-slate-400 block">Kosongkan jika hanya ingin download via browser.</span>
+                    <input type="text" id="custom-output-dir" placeholder="Contoh: D:\hasil_compress atau ./file" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono placeholder-slate-400 dark:placeholder-slate-500">
+                    <span class="text-[10px] text-slate-400 dark:text-slate-500 block">Kosongkan jika hanya ingin download via browser.</span>
                 </div>
 
                 <!-- Compress Action Button -->
-                <button id="btn-compress" onclick="processCompress()" class="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl shadow-lg shadow-teal-600/25 transition-all transform active:scale-95 flex items-center justify-center gap-2">
+                <button id="btn-compress" onclick="processCompress()" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 dark:shadow-none transition-all transform active:scale-95 flex items-center justify-center gap-2">
                     <i data-lucide="minimize-2" class="w-5 h-5"></i>
                     <span>Kompres PDF Sekarang</span>
                 </button>
@@ -90,37 +90,13 @@
         </div>
     </div>
 
-    <!-- Modal Download -->
-    <div id="result-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200">
-            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto ring-8 ring-emerald-50">
-                <i data-lucide="check-circle-2" class="w-8 h-8"></i>
-            </div>
-            <div>
-                <h3 class="text-2xl font-extrabold text-slate-900">Kompresi Selesai!</h3>
-                <p id="result-meta" class="text-sm text-slate-500 mt-1">Ukuran berhasil dikurangi.</p>
-                <div id="saved-folder-box" class="hidden mt-3 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-left text-xs">
-                    <span class="font-bold text-emerald-800 flex items-center gap-1">
-                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Tersimpan di Folder Komputer:
-                    </span>
-                    <span id="saved-folder-path" class="font-mono text-slate-700 block mt-1 break-all select-all"></span>
-                    <button id="btn-open-folder" onclick="openSavedFolder()" class="mt-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1">
-                        <i data-lucide="folder" class="w-3.5 h-3.5"></i> Buka Folder di File Explorer
-                    </button>
-                </div>
-            </div>
-
-            <div class="space-y-3">
-                <a id="btn-download-result" href="#" download class="w-full py-3.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-2xl shadow-lg shadow-teal-600/25 transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="download" class="w-5 h-5"></i>
-                    Unduh PDF Terkompresi
-                </a>
-                <button onclick="resetTool()" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-2xl transition-colors">
-                    Kompres PDF Lain
-                </button>
-            </div>
-        </div>
-    </div>
+    {% from 'macros.html' import result_modal %}
+    {{ result_modal(
+        title='Kompresi Selesai!',
+        meta='Ukuran berhasil dikurangi.',
+        download_label='Unduh PDF Terkompresi',
+        reset_label='Kompres PDF Lain'
+    ) }}
 </div>
 {% endblock %}
 

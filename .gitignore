@@ -1,0 +1,10 @@
+# Node / build tooling
+node_modules/
+
+# Python
+__pycache__/
+venv/
+
+# App runtime data
+uploads/
+outputs/

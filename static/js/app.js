@@ -2,36 +2,61 @@
  * LocalPDF Studio - Global JavaScript Utilities
  */
 
+// Theme manager: sinkron dengan guard script di <head> base.html
+function initTheme() {
+    const toggleBtn = document.getElementById('theme-toggle');
+
+    const applyTheme = (dark) => {
+        document.documentElement.classList.toggle('dark', dark);
+        try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) {}
+    };
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            applyTheme(!document.documentElement.classList.contains('dark'));
+            lucide.createIcons(); // render ulang ikon sun/moon yang tertukar
+        });
+    }
+
+    // Sinkron antar-tab
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'theme' && e.newValue) {
+            document.documentElement.classList.toggle('dark', e.newValue === 'dark');
+        }
+    });
+}
+
+initTheme();
+
 // Toast Notification Manager
 function showToast(message, type = 'info', duration = 3500) {
     const container = document.getElementById('toast-container');
     if (!container) return;
 
     const toast = document.createElement('div');
-    toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all transform duration-300 translate-y-2 opacity-0 text-white`;
+    toast.className = 'flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium transition-all transform duration-300 translate-y-2 opacity-0 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200';
 
-    let bgColor = 'bg-slate-900';
+    let iconChip = '';
     let iconSvg = '';
 
     if (type === 'success') {
-        bgColor = 'bg-emerald-600';
+        iconChip = 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400';
         iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
     } else if (type === 'error') {
-        bgColor = 'bg-rose-600';
+        iconChip = 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400';
         iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
     } else if (type === 'warning') {
-        bgColor = 'bg-amber-600';
+        iconChip = 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400';
         iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
     } else {
-        bgColor = 'bg-slate-800';
+        iconChip = 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300';
         iconSvg = `<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
     }
 
-    toast.classList.add(bgColor);
     toast.innerHTML = `
-        ${iconSvg}
+        <span class="flex items-center justify-center w-8 h-8 rounded-lg ${iconChip} [&>svg]:w-4 [&>svg]:h-4">${iconSvg}</span>
         <span class="flex-1">${message}</span>
-        <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white p-0.5 rounded-lg">
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 p-0.5 rounded-lg">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     `;
