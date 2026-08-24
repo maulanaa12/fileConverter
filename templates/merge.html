@@ -13,11 +13,21 @@
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Gabungkan beberapa dokumen PDF menjadi satu file dalam urutan yang Anda inginkan.</p>
         </div>
-        <div id="top-actions" class="hidden flex items-center gap-2">
-            <button onclick="sortNaturally()" class="px-3 py-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl flex items-center gap-1.5 shadow-sm">
-                <i data-lucide="arrow-down-az" class="w-4 h-4 text-brand-600"></i> Urutkan Alami (1, 2, 10)
-            </button>
-            <button onclick="clearAllFiles()" class="px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl flex items-center gap-1.5">
+        <div id="top-actions" class="hidden flex items-center gap-2 flex-wrap">
+            <!-- Grup Pengurutan -->
+            <div class="inline-flex rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-0.5 shadow-sm dark:shadow-none text-xs font-semibold">
+                <button onclick="sortNaturally()" title="Urutkan Alami A-Z (1, 2, 10)" class="px-3 py-1.5 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-1 transition-all">
+                    <i data-lucide="arrow-down-az" class="w-4 h-4 text-brand-600"></i> A-Z
+                </button>
+                <button onclick="sortNaturallyDesc()" title="Urutkan Terbalik Z-A (10, 2, 1)" class="px-3 py-1.5 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 transition-all">
+                    <i data-lucide="arrow-up-za" class="w-4 h-4 text-brand-600"></i> Z-A
+                </button>
+                <button onclick="reverseOrder()" title="Balik Urutan Saat Ini (Cocok untuk file hasil scan terbalik)" class="px-3 py-1.5 text-brand-900 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/15 hover:bg-brand-100 dark:hover:bg-brand-500/25 rounded-lg font-bold flex items-center gap-1 border-l border-brand-200 dark:border-brand-500/30 transition-all">
+                    <i data-lucide="arrow-left-right" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Balik (⇄)
+                </button>
+            </div>
+
+            <button onclick="clearAllFiles()" class="px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl flex items-center gap-1.5 transition-all">
                 <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Semua
             </button>
         </div>
@@ -294,6 +304,18 @@
         uploadedFiles.sort((a, b) => naturalSortCompare(a.name, b.name));
         renderWorkspace();
         showToast('File diurutkan berdasarkan penomoran alami (A-Z / 1, 2, 10)', 'info');
+    }
+
+    function sortNaturallyDesc() {
+        uploadedFiles.sort((a, b) => naturalSortCompare(b.name, a.name));
+        renderWorkspace();
+        showToast('File diurutkan secara terbalik (Z-A / 10, 2, 1)', 'info');
+    }
+
+    function reverseOrder() {
+        uploadedFiles.reverse();
+        renderWorkspace();
+        showToast('Urutan file dibalik (Reverse ⇄)', 'info');
     }
 
     async function processMerge() {
