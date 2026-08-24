@@ -1,0 +1,19 @@
+{
+  "name": "localpdf-studio-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Frontend build tooling for LocalPDF Studio (Tailwind CSS + vendored runtime assets)",
+  "scripts": {
+    "build": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.css --minify",
+    "watch": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.css --watch",
+    "vendor": "node scripts/vendor.mjs"
+  },
+  "dependencies": {
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "lucide": "^1.33.0",
+    "sortablejs": "1.15.2"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

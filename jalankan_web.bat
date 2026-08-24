@@ -9,8 +9,12 @@ echo Menyiapkan server lokal...
 echo Membuka aplikasi di browser...
 echo.
 
+:: Gunakan port dari variabel lingkungan PORT (default: 8000)
+if "%PORT%"=="" set PORT=8000
+if "%HOST%"=="" set HOST=127.0.0.1
+
 :: Tunggu 1 detik lalu buka browser
-start "" "http://127.0.0.1:8000"
+start "" "http://127.0.0.1:%PORT%"
 
 :: Jalankan server web FastAPI
 python app.py

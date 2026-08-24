@@ -48,21 +48,24 @@ else
 fi
 
 # 3. Buka browser secara otomatis di background jika di lingkungan desktop (GUI)
+PORT="${PORT:-8000}"
+HOST="${HOST:-127.0.0.1}"
+
 if [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; then
     (
         sleep 1.5
         if command -v xdg-open >/dev/null 2>&1; then
-            xdg-open "http://127.0.0.1:8000" >/dev/null 2>&1
+            xdg-open "http://127.0.0.1:${PORT}" >/dev/null 2>&1
         elif command -v gio >/dev/null 2>&1; then
-            gio open "http://127.0.0.1:8000" >/dev/null 2>&1
+            gio open "http://127.0.0.1:${PORT}" >/dev/null 2>&1
         elif command -v sensible-browser >/dev/null 2>&1; then
-            sensible-browser "http://127.0.0.1:8000" >/dev/null 2>&1
+            sensible-browser "http://127.0.0.1:${PORT}" >/dev/null 2>&1
         fi
     ) &
 fi
 
 echo "[INFO] Menjalankan server LocalPDF Studio..."
-echo "Akses web di: http://127.0.0.1:8000"
+echo "Akses web di: http://${HOST}:${PORT}"
 echo "Tekan Ctrl + C untuk menghentikan server."
 echo ""
 

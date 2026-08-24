@@ -592,8 +592,11 @@ async def api_download(task_id: str, filename: str):
 
 if __name__ == "__main__":
     import uvicorn
+
+    port = int(os.environ.get("PORT", "8000"))
+    host = os.environ.get("HOST", "127.0.0.1")
     print("=" * 60)
     print("       LOCALPDF STUDIO - SERVER AKTIF")
-    print("       Akses melalui browser di: http://127.0.0.1:8000")
+    print(f"       Akses melalui browser di: http://{host}:{port}")
     print("=" * 60)
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("app:app", host=host, port=port, reload=True)

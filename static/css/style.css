@@ -1,17 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+/* LocalPDF Studio - custom styles (tema via CSS vars, flip oleh html.dark) */
 
+/* Plus Jakarta Sans - bundled lokal (latin subset) */
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2');
+}
+
+/* Theme tokens */
 :root {
-    --primary: #e5322d;
-    --primary-hover: #cb241f;
-    --primary-light: #fef2f2;
-    --primary-border: #fecaca;
-    --dark-bg: #0f172a;
-    --dark-card: #1e293b;
-    --dark-border: #334155;
+    --primary: #0d9488;
+    --primary-hover: #0f766e;
+    --primary-soft: #f0fdfa;
+    --primary-border: #99f6e4;
+
+    --surface: #ffffff;
+    --surface-muted: #f8fafc;
+    --border-c: #cbd5e1;
+    --scrollbar: #cbd5e1;
+    --scrollbar-hover: #94a3b8;
+}
+
+html.dark {
+    --primary: #14b8a6;
+    --primary-hover: #2dd4bf;
+    --primary-soft: rgba(20, 184, 166, 0.08);
+    --primary-border: rgba(45, 212, 191, 0.35);
+
+    --surface: #1e293b;
+    --surface-muted: #0f172a;
+    --border-c: #334155;
+    --scrollbar: #334155;
+    --scrollbar-hover: #475569;
 }
 
 body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Custom Scrollbar */
@@ -23,31 +77,34 @@ body {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--scrollbar);
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: var(--scrollbar-hover);
+}
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar) transparent;
 }
 
-/* Dropzone styling */
+/* Dropzone styling (warna dragover via var agar ikut tema) */
 .dropzone {
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed var(--border-c);
     transition: all 0.25s ease;
 }
 .dropzone.dragover {
-    border-color: #e5322d;
-    background-color: #fef2f2;
+    border-color: var(--primary);
+    background-color: var(--primary-soft);
     transform: scale(1.01);
 }
 
 /* Sortable items animation */
 .sortable-ghost {
     opacity: 0.4;
-    background-color: #fee2e2 !important;
-    border: 2px dashed #e5322d !important;
+    background-color: var(--primary-soft) !important;
+    border: 2px dashed var(--primary) !important;
 }
-
 .sortable-chosen {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     transform: scale(1.02);
@@ -55,11 +112,14 @@ body {
 
 /* Tool card hover */
 .tool-card {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .tool-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+.dark .tool-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 }
 
 /* Pulse animation for processing */
@@ -71,7 +131,27 @@ body {
     animation: pulse-subtle 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Badge colors */
-.badge-pdf { background-color: #fee2e2; color: #b91c1c; }
-.badge-img { background-color: #e0f2fe; color: #0369a1; }
-.badge-zip { background-color: #fef3c7; color: #b45309; }
+/* Pengganti plugin tailwindcss-animate (sebelumnya class no-op) */
+@keyframes modal-pop-kf {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+.modal-pop {
+    animation: modal-pop-kf 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes fade-in-fast-kf {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.fade-in-fast {
+    animation: fade-in-fast-kf 0.15s ease-out;
+}
+
+/* Badge colors (file-type chips) */
+.badge-pdf { background-color: rgba(13, 148, 136, 0.12); color: #0f766e; }
+.badge-img { background-color: rgba(2, 132, 199, 0.12); color: #0369a1; }
+.badge-zip { background-color: rgba(217, 119, 6, 0.14); color: #b45309; }
+
+html.dark .badge-pdf { color: #2dd4bf; }
+html.dark .badge-img { color: #38bdf8; }
+html.dark .badge-zip { color: #fbbf24; }
