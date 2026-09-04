@@ -151,3 +151,26 @@ function setupDropzone(dropzoneEl, fileInputEl, onFilesSelected) {
         fileInputEl.value = ''; // Reset so the user can re-select the same file(s)
     });
 }
+
+// Back-to-Top Button Manager
+function initBackToTop() {
+    const btn = document.getElementById('btn-back-to-top');
+    if (!btn) return;
+
+    const onScroll = () => {
+        if (window.scrollY > 300) {
+            btn.classList.add('visible');
+        } else {
+            btn.classList.remove('visible');
+        }
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBackToTop);
+} else {
+    initBackToTop();
+}

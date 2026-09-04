@@ -16,11 +16,11 @@
 
         <!-- Mode Toggle Tabs -->
         <div class="inline-flex p-1 bg-slate-200/80 rounded-2xl dark:bg-slate-700/60">
-            <button id="tab-btn-upload" onclick="switchTab('upload')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-brand-500 text-white hover:bg-brand-600 shadow-sm dark:shadow-none">
-                Mode Upload File
-            </button>
-            <button id="tab-btn-local" onclick="switchTab('local')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+            <button id="tab-btn-local" onclick="switchTab('local')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-brand-500 text-white hover:bg-brand-600 shadow-sm dark:shadow-none">
                 Mode Folder Lokal Komputer
+            </button>
+            <button id="tab-btn-upload" onclick="switchTab('upload')" class="px-4 py-2 text-xs font-bold rounded-xl transition-all bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700">
+                Mode Upload File
             </button>
         </div>
     </div>
@@ -148,7 +148,7 @@
                 </div>
 
                 <!-- Action Button for Upload Mode -->
-                <div id="action-upload-box">
+                <div id="action-upload-box" class="hidden">
                     <button id="btn-process-upload" onclick="executeRenameUpload()" class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 dark:shadow-none transition-all transform active:scale-95 flex items-center justify-center gap-2">
                         <i data-lucide="download" class="w-5 h-5"></i>
                         <span>Rename & Unduh ZIP</span>
@@ -156,7 +156,7 @@
                 </div>
 
                 <!-- Action Button for Local Mode -->
-                <div id="action-local-box" class="hidden space-y-2">
+                <div id="action-local-box" class="space-y-2">
                     <button id="btn-process-local" onclick="executeRenameLocal()" class="w-full py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/25 dark:shadow-none transition-all transform active:scale-95 flex items-center justify-center gap-2">
                         <i data-lucide="check" class="w-5 h-5"></i>
                         <span>Eksekusi Rename pada Disk</span>
@@ -173,7 +173,7 @@
         <div class="lg:col-span-2 space-y-4">
             
             <!-- SECTION 1: UPLOAD MODE SOURCE -->
-            <div id="source-upload-container" class="space-y-4">
+            <div id="source-upload-container" class="hidden space-y-4">
                 <div id="rename-dropzone" class="dropzone rounded-2xl bg-white dark:bg-slate-900 p-6 text-center cursor-pointer flex flex-col items-center justify-center border-dashed">
                     <input type="file" id="file-input" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.bmp,.tif,.tiff,application/pdf,image/*" class="hidden">
                     <div class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-500/15 text-brand-600 dark:text-brand-400 flex items-center justify-center mb-2">
@@ -185,7 +185,7 @@
             </div>
 
             <!-- SECTION 2: LOCAL FOLDER MODE SOURCE -->
-            <div id="source-local-container" class="hidden bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <div id="source-local-container" class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                 <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                     <i data-lucide="hard-drive" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Path Folder di Komputer / Harddisk
                 </label>
@@ -255,7 +255,7 @@
 
 {% block extra_scripts %}
 <script>
-    let currentMode = 'upload'; // 'upload' | 'local'
+    let currentMode = 'local'; // 'upload' | 'local'
     let currentFiles = []; // list of filenames or {name, tempPath}
     let previewResults = [];
 

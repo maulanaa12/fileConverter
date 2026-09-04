@@ -215,4 +215,44 @@ html.dark .badge-zip { color: #fbbf24; }
     margin-bottom: -1rem;
 }
 
+/* Floating Scroll-to-Top Button */
+.btn-back-to-top {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 40;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    background-color: var(--primary, #0d9488);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.35), 0 4px 6px -4px rgba(13, 148, 136, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(1rem) scale(0.9);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+.btn-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+.btn-back-to-top:hover {
+    background-color: var(--primary-hover, #0f766e);
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 14px 20px -3px rgba(13, 148, 136, 0.45), 0 6px 8px -4px rgba(13, 148, 136, 0.25);
+}
+.btn-back-to-top:active {
+    transform: translateY(0) scale(0.95);
+}
+html.dark .btn-back-to-top {
+    box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
 
