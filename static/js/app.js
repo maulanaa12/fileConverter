@@ -6,22 +6,33 @@
 function initTheme() {
     const toggleBtn = document.getElementById('theme-toggle');
 
+    const updateBtnTooltip = (dark) => {
+        if (!toggleBtn) return;
+        const tip = dark ? 'Ganti ke tema terang' : 'Ganti ke tema gelap';
+        toggleBtn.setAttribute('title', tip);
+        toggleBtn.setAttribute('aria-label', tip);
+    };
+
     const applyTheme = (dark) => {
         document.documentElement.classList.toggle('dark', dark);
         try { localStorage.setItem('theme', dark ? 'dark' : 'light'); } catch (e) {}
+        updateBtnTooltip(dark);
     };
 
     if (toggleBtn) {
+        updateBtnTooltip(document.documentElement.classList.contains('dark'));
         toggleBtn.addEventListener('click', () => {
             applyTheme(!document.documentElement.classList.contains('dark'));
-            lucide.createIcons(); // render ulang ikon sun/moon yang tertukar
+            lucide.createIcons(); // render ulang ikon sun/moon
         });
     }
 
     // Sinkron antar-tab
     window.addEventListener('storage', (e) => {
         if (e.key === 'theme' && e.newValue) {
-            document.documentElement.classList.toggle('dark', e.newValue === 'dark');
+            const dark = e.newValue === 'dark';
+            document.documentElement.classList.toggle('dark', dark);
+            updateBtnTooltip(dark);
         }
     });
 }

@@ -15,7 +15,8 @@ from pydantic import BaseModel
 from core.utils import (
     BASE_DIR, UPLOAD_DIR, OUTPUT_DIR,
     generate_task_id, get_task_dirs, cleanup_old_files,
-    get_pdf_info, generate_pdf_thumbnail, format_bytes, natural_sort_key
+    get_pdf_info, generate_pdf_thumbnail, format_bytes, natural_sort_key,
+    safe_delete_local_file
 )
 from core.merger import merge_pdf_files
 from core.image_converter import convert_images_to_pdf, convert_pdf_to_images
@@ -184,6 +185,11 @@ class CompressRequest(BaseModel):
 
 class OpenFolderRequest(BaseModel):
     path: str
+
+class DeleteLocalFilesRequest(BaseModel):
+    paths: List[str]
+    to_recycle_bin: bool = True
+
 
 
 # ==========================================
@@ -574,6 +580,53 @@ async def api_open_folder(req: OpenFolderRequest):
         return JSONResponse({"success": True, "opened_path": str(folder_to_open)})
     except Exception as e:
         return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+
+
+@app.post("/api/delete-local-files")
+async def api_delete_local_files(req: DeleteLocalFilesRequest):
+    """Menghapus satu atau beberapa file gambar lokal ke Recycle Bin atau secara langsung."""
+    try:
+        if not req.paths:
+            return JSONResponse({"success": False, "message": "Tidak ada file yang dipilih untuk dihapus."}, status_code=400)
+            
+        img_ext = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff')
+        deleted_files = []
+        failed_files = []
+        
+        for raw_path in req.paths:
+            clean_path = raw_path.strip('\"\'')
+            p = Path(clean_path).resolve()
+            
+            if not p.exists() or not p.is_file():
+                failed_files.append({"path": raw_path, "reason": "File tidak ditemukan"})
+                continue
+                
+            if p.suffix.lower() not in img_ext:
+                failed_files.append({"path": raw_path, "reason": "Bukan file gambar yang didukung"})
+                continue
+                
+            ok, msg = safe_delete_local_file(p, to_recycle_bin=req.to_recycle_bin)
+            if ok:
+                deleted_files.append({"name": p.name, "path": str(p), "message": msg})
+            else:
+                failed_files.append({"name": p.name, "path": str(p), "reason": msg})
+                
+        is_success = len(deleted_files) > 0
+        message = f"Berhasil menghapus {len(deleted_files)} file gambar." if is_success else "Gagal menghapus file yang dipilih."
+        if failed_files and deleted_files:
+            message += f" ({len(failed_files)} file gagal)"
+            
+        return JSONResponse({
+            "success": is_success,
+            "deleted_count": len(deleted_files),
+            "failed_count": len(failed_files),
+            "deleted_files": deleted_files,
+            "failed_files": failed_files,
+            "message": message
+        })
+    except Exception as e:
+        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+
 
 
 @app.get("/api/download/{task_id}/{filename}")

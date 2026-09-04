@@ -122,3 +122,65 @@ def generate_pdf_thumbnail(pdf_path: str | Path, page_num: int = 0, dpi: int = 7
     except Exception as e:
         print(f"Error rendering thumbnail for {pdf_path}: {e}")
         return None
+
+
+def safe_delete_local_file(file_path: str | Path, to_recycle_bin: bool = True) -> tuple[bool, str]:
+    """
+    Menghapus file lokal dengan aman.
+    Jika to_recycle_bin=True dan OS Windows, memindahkan file ke Recycle Bin (tempat sampah) agar dapat di-restore.
+    Jika bukan Windows atau jika to_recycle_bin=False atau Recycle Bin gagal, menggunakan os.remove().
+    """
+    try:
+        p = Path(file_path).resolve()
+        if not p.exists():
+            return False, f"File '{p.name}' tidak ditemukan."
+        if not p.is_file():
+            return False, f"Path '{p.name}' bukan merupakan file."
+
+        if to_recycle_bin and os.name == 'nt':
+            try:
+                import sys
+                import ctypes
+                from ctypes import wintypes
+
+                class SHFILEOPSTRUCTW(ctypes.Structure):
+                    _fields_ = [
+                        ('hwnd', wintypes.HWND),
+                        ('wFunc', wintypes.UINT),
+                        ('pFrom', wintypes.LPCWSTR),
+                        ('pTo', wintypes.LPCWSTR),
+                        ('fFlags', wintypes.WORD),
+                        ('fAnyOperationsAborted', wintypes.BOOL),
+                        ('hNameMappings', wintypes.LPVOID),
+                        ('lpszProgressTitle', wintypes.LPCWSTR),
+                    ]
+
+                FO_DELETE = 0x0003
+                FOF_ALLOWUNDO = 0x0040
+                FOF_NOCONFIRMATION = 0x0010
+                FOF_SILENT = 0x0004
+
+                abs_path_str = str(p)
+                p_from = abs_path_str + '\0\0'
+                fileop = SHFILEOPSTRUCTW()
+                fileop.hwnd = 0
+                fileop.wFunc = FO_DELETE
+                fileop.pFrom = p_from
+                fileop.pTo = None
+                fileop.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT
+                fileop.fAnyOperationsAborted = False
+                fileop.hNameMappings = None
+                fileop.lpszProgressTitle = None
+
+                res = ctypes.windll.shell32.SHFileOperationW(ctypes.byref(fileop))
+                if res == 0 and not p.exists():
+                    return True, f"File '{p.name}' berhasil dipindahkan ke Recycle Bin."
+            except Exception as bin_err:
+                print(f"Recycle bin operation failed for {p}, falling back to os.remove: {bin_err}")
+
+        # Fallback to direct os.remove
+        p.unlink(missing_ok=True)
+        return True, f"File '{p.name}' berhasil dihapus."
+    except Exception as e:
+        return False, f"Gagal menghapus '{Path(file_path).name}': {str(e)}"
+

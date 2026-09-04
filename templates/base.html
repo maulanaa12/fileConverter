@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}LocalPDF Studio - Alat PDF Lengkap & Cepat{% endblock %}</title>
-    <!-- Tema guard: pasang class .dark sebelum first paint (anti-FOUC) -->
-    <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();</script>
+    <!-- Tema guard: pasang class .dark sebelum first paint jika tersimpan 'dark' -->
+    <script>(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})();</script>
     <!-- Tailwind CSS (build lokal) -->
     <link rel="stylesheet" href="/static/css/tailwind.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=1.9">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased selection:bg-brand-500 selection:text-white font-sans">
@@ -103,14 +103,19 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Global Toast Container -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none [&>*]:pointer-events-auto"></div>
+    <!-- Floating Back-to-Top Button -->
+    <button id="btn-back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Kembali ke atas" aria-label="Kembali ke atas" class="btn-back-to-top">
+        <i data-lucide="arrow-up" class="w-5 h-5"></i>
+    </button>
+
+    <!-- Global Toast Container (Positioned cleanly above back-to-top button) -->
+    <div id="toast-container" class="fixed bottom-20 right-6 z-50 flex flex-col gap-2.5 max-w-md w-full pointer-events-none [&>*]:pointer-events-auto"></div>
 
     <!-- Footer -->
     <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p><strong>LocalPDF Studio</strong> &copy; 2026 — Solusi pengolahan file PDF cepat &amp; aman langsung di komputer Anda.</p>
-            <p class="text-slate-400 dark:text-slate-500">Semua proses berjalan secara lokal tanpa upload ke internet.</p>
+            <p class="text-slate-500 dark:text-slate-400">Semua proses berjalan secara lokal tanpa upload ke internet.</p>
         </div>
     </footer>
 
@@ -118,7 +123,7 @@
     <script src="/static/vendor/lucide.min.js"></script>
     <script src="/static/vendor/Sortable.min.js"></script>
     <!-- App JS -->
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/app.js?v=1.3"></script>
     <script>
         // Inisialisasi ikon Lucide
         lucide.createIcons();

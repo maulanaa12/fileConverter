@@ -155,3 +155,64 @@ body {
 html.dark .badge-pdf { color: #2dd4bf; }
 html.dark .badge-img { color: #38bdf8; }
 html.dark .badge-zip { color: #fbbf24; }
+
+/* Custom resizable preview container */
+#preview-files-list,
+.custom-resizable {
+    resize: vertical !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    contain: paint;
+}
+#preview-files-list::-webkit-resizer,
+.custom-resizable::-webkit-resizer {
+    background-color: transparent;
+    border-bottom: 3px solid var(--primary, #0d9488);
+    border-right: 3px solid var(--primary, #0d9488);
+}
+
+/* Danger Action Utilities (Delete Modal & Destructive Buttons) */
+.bg-rose-50 {
+    background-color: #fff1f2 !important;
+}
+.bg-rose-600 {
+    background-color: #e11d48 !important;
+}
+.hover\:bg-rose-700:hover {
+    background-color: #be123c !important;
+}
+.shadow-rose-600\/25 {
+    box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.25), 0 4px 6px -4px rgba(225, 29, 72, 0.25) !important;
+}
+
+/* Sidebar sticky & flex layout (Image to PDF) */
+@media (min-width: 1024px) {
+    .image-pdf-sidebar {
+        position: sticky;
+        top: 5rem;
+        z-index: 20;
+    }
+    .image-pdf-card {
+        max-height: calc(100vh - 6.5rem);
+        display: flex;
+        flex-direction: column;
+    }
+    .image-pdf-settings-scroll {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+}
+
+/* Missing utility classes */
+.bottom-0 {
+    bottom: 0;
+}
+.-mx-4 {
+    margin-left: -1rem;
+    margin-right: -1rem;
+}
+.-mb-4 {
+    margin-bottom: -1rem;
+}
+
+
