@@ -15,9 +15,23 @@ except ImportError:
     except ImportError:
         fitz = None
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-UPLOAD_DIR = BASE_DIR / "uploads"
-OUTPUT_DIR = BASE_DIR / "outputs"
+import sys
+
+if getattr(sys, 'frozen', False):
+    # Dijalankan sebagai bundel PyInstaller
+    BASE_DIR = Path(getattr(sys, '_MEIPASS', Path(sys.executable).parent))
+    app_data = os.environ.get("LOCALAPPDATA")
+    if app_data:
+        DATA_DIR = Path(app_data) / "LocalPDFStudio"
+    else:
+        DATA_DIR = Path.home() / ".localpdf_studio"
+else:
+    # Dijalankan langsung via interpreter Python
+    BASE_DIR = Path(__file__).resolve().parent.parent
+    DATA_DIR = BASE_DIR
+
+UPLOAD_DIR = DATA_DIR / "uploads"
+OUTPUT_DIR = DATA_DIR / "outputs"
 
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

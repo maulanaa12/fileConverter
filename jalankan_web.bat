@@ -10,7 +10,7 @@ echo Membuka aplikasi di browser...
 echo.
 
 :: Gunakan port dari variabel lingkungan PORT (default: 8000)
-if "%PORT%"=="" set PORT=8000
+if "%PORT%"=="" set PORT=8041
 if "%HOST%"=="" set HOST=127.0.0.1
 
 :: Tunggu 1 detik lalu buka browser

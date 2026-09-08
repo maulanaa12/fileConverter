@@ -72,6 +72,13 @@ def handle_custom_save(source_file: Path, custom_output_dir: Optional[str]) -> O
         return None
 
 
+
+@app.get("/api/health")
+async def api_health():
+    """Health check endpoint untuk desktop launcher."""
+    return {"status": "ok", "app": "LocalPDF Studio"}
+
+
 # ==========================================
 # PAGE ROUTES (UI)
 # ==========================================
