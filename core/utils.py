@@ -198,3 +198,130 @@ def safe_delete_local_file(file_path: str | Path, to_recycle_bin: bool = True) -
     except Exception as e:
         return False, f"Gagal menghapus '{Path(file_path).name}': {str(e)}"
 
+
+def pick_modern_folder(title: str = "Pilih Folder", initial_dir: str = "") -> Optional[str]:
+    """Membuka jendela File Explorer modern native Windows (IFileOpenDialog) untuk memilih folder."""
+    cleaned_dir = initial_dir.strip('"\'') if initial_dir else ""
+
+    if os.name == 'nt':
+        try:
+            import ctypes
+            from ctypes import wintypes, POINTER, c_wchar_p, c_void_p, HRESULT, byref
+
+            class GUID(ctypes.Structure):
+                _fields_ = [
+                    ("Data1", wintypes.DWORD),
+                    ("Data2", wintypes.WORD),
+                    ("Data3", wintypes.WORD),
+                    ("Data4", wintypes.BYTE * 8)
+                ]
+
+            CLSID_FileOpenDialog = GUID(0xDC1C5A9C, 0xE88A, 0x4DDE, (wintypes.BYTE * 8)(0xA5, 0xA1, 0x60, 0xF8, 0x2A, 0x20, 0xAE, 0xF7))
+            IID_IFileOpenDialog = GUID(0xD57C7288, 0xD4AD, 0x4768, (wintypes.BYTE * 8)(0xBE, 0x02, 0x9D, 0x96, 0x95, 0x32, 0xD9, 0x60))
+            IID_IShellItem = GUID(0x43826D1E, 0xE718, 0x42EE, (wintypes.BYTE * 8)(0xBC, 0x55, 0xA1, 0xE2, 0x61, 0xC3, 0x7B, 0xFE))
+
+            FOS_PICKFOLDERS = 0x00000020
+            FOS_FORCEFILESYSTEM = 0x00000040
+            SIGDN_FILESYSPATH = 0x80058000
+
+            ole32 = ctypes.oledll.ole32
+            ole32.CoInitialize(None)
+            shell32 = ctypes.windll.shell32
+            user32 = ctypes.windll.user32
+
+            p_dialog = c_void_p()
+            hr = ole32.CoCreateInstance(
+                byref(CLSID_FileOpenDialog),
+                None,
+                1,  # CLSCTX_INPROC_SERVER
+                byref(IID_IFileOpenDialog),
+                byref(p_dialog)
+            )
+
+            if hr == 0 and p_dialog.value:
+                try:
+                    vtable = ctypes.cast(ctypes.cast(p_dialog, POINTER(c_void_p)).contents, POINTER(c_void_p))
+
+                    # 1. GetOptions
+                    GetOptions_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, POINTER(wintypes.DWORD))
+                    GetOptions = GetOptions_proto(vtable[10])
+                    current_opts = wintypes.DWORD()
+                    GetOptions(p_dialog, byref(current_opts))
+
+                    # 2. SetOptions (FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM)
+                    SetOptions_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, wintypes.DWORD)
+                    SetOptions = SetOptions_proto(vtable[9])
+                    SetOptions(p_dialog, current_opts.value | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM)
+
+                    # 3. SetTitle
+                    if title:
+                        SetTitle_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, c_wchar_p)
+                        SetTitle = SetTitle_proto(vtable[17])
+                        SetTitle(p_dialog, title)
+
+                    # 4. SetOkButtonLabel
+                    SetOk_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, c_wchar_p)
+                    SetOk = SetOk_proto(vtable[18])
+                    SetOk(p_dialog, "Pilih Folder")
+
+                    # 5. Set initial folder if exists
+                    if cleaned_dir and Path(cleaned_dir).is_dir():
+                        p_shell_item = c_void_p()
+                        if shell32.SHCreateItemFromParsingName(c_wchar_p(cleaned_dir), None, byref(IID_IShellItem), byref(p_shell_item)) == 0:
+                            SetFolder_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, c_void_p)
+                            SetFolder = SetFolder_proto(vtable[12])
+                            SetFolder(p_dialog, p_shell_item)
+                            # Release p_shell_item
+                            item_vt = ctypes.cast(ctypes.cast(p_shell_item, POINTER(c_void_p)).contents, POINTER(c_void_p))
+                            Release_item = ctypes.WINFUNCTYPE(wintypes.ULONG, c_void_p)(item_vt[2])
+                            Release_item(p_shell_item)
+
+                    # 6. Show dialog (menggunakan active foreground window sebagai owner)
+                    hwnd_owner = user32.GetForegroundWindow()
+                    Show_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, wintypes.HWND)
+                    Show = Show_proto(vtable[3])
+                    show_res = Show(p_dialog, hwnd_owner)
+
+                    # 7. Ambil hasil jika user menekan Pilih Folder (S_OK == 0)
+                    if show_res == 0:
+                        p_result_item = c_void_p()
+                        GetResult_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, POINTER(c_void_p))
+                        GetResult = GetResult_proto(vtable[20])
+                        if GetResult(p_dialog, byref(p_result_item)) == 0 and p_result_item.value:
+                            item_vt = ctypes.cast(ctypes.cast(p_result_item, POINTER(c_void_p)).contents, POINTER(c_void_p))
+                            GetDisplayName_proto = ctypes.WINFUNCTYPE(HRESULT, c_void_p, wintypes.DWORD, POINTER(c_wchar_p))
+                            GetDisplayName = GetDisplayName_proto(item_vt[5])
+                            psz_path = c_wchar_p()
+                            if GetDisplayName(p_result_item, SIGDN_FILESYSPATH, byref(psz_path)) == 0 and psz_path.value:
+                                res_path = str(psz_path.value)
+                                ole32.CoTaskMemFree(ctypes.cast(psz_path, c_void_p))
+                                Release_res = ctypes.WINFUNCTYPE(wintypes.ULONG, c_void_p)(item_vt[2])
+                                Release_res(p_result_item)
+                                return res_path
+                finally:
+                    Release_dlg = ctypes.WINFUNCTYPE(wintypes.ULONG, c_void_p)(vtable[2])
+                    Release_dlg(p_dialog)
+                    ole32.CoUninitialize()
+        except Exception as win_err:
+            print(f"Windows modern folder dialog error: {win_err}")
+
+    # Fallback ke Tkinter jika non-Windows atau error
+    try:
+        import tkinter as tk
+        from tkinter import filedialog
+        root = tk.Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        selected = filedialog.askdirectory(
+            title=title,
+            initialdir=cleaned_dir if cleaned_dir and Path(cleaned_dir).is_dir() else None
+        )
+        root.destroy()
+        if selected and Path(selected).is_dir():
+            return str(Path(selected).resolve())
+    except Exception as tk_err:
+        print(f"Tkinter fallback error: {tk_err}")
+
+    return None
+
+

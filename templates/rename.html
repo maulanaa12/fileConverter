@@ -186,16 +186,23 @@
 
             <!-- SECTION 2: LOCAL FOLDER MODE SOURCE -->
             <div id="source-local-container" class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
-                <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <i data-lucide="hard-drive" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Path Folder di Komputer / Harddisk
-                </label>
-                <div class="flex gap-2">
-                    <input type="text" id="local-folder-path" placeholder="Contoh: D:\magang\1991 - 1992 (6 -1)\file-2 atau ./file" class="flex-1 px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none font-mono dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:ring-brand-500 dark:focus:border-brand-500">
-                    <button onclick="scanLocalFolder()" class="px-4 py-2 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900">
-                        <i data-lucide="search" class="w-4 h-4"></i> Pindai Folder
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <i data-lucide="hard-drive" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Path Folder di Komputer / Harddisk
+                    </label>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400">File diproses langsung di disk tanpa upload</span>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <div class="relative flex-1">
+                        <input type="text" id="local-folder-path" placeholder="Pilih folder atau tempel path (Contoh: D:\magang\berkas)" class="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none font-mono dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:ring-brand-500 dark:focus:border-brand-500">
+                        <i data-lucide="folder" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
+                    </div>
+                    <button id="btn-scan-rename" type="button" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-sm dark:bg-brand-500 dark:hover:bg-brand-600 cursor-pointer whitespace-nowrap">
+                        <i data-lucide="folder-search" class="w-4 h-4"></i>
+                        <span>Pilih Folder</span>
                     </button>
                 </div>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">File akan dibaca langsung dari folder tersebut tanpa perlu diunggah.</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">Klik <strong>Pilih Folder</strong> untuk memilih dari File Explorer, atau tempel path folder Anda.</p>
             </div>
 
             <!-- LIVE PREVIEW TABLE -->
@@ -261,6 +268,15 @@
 
     const fileInput = document.getElementById('file-input');
     setupDropzone(document.getElementById('rename-dropzone'), fileInput, handleUploadedFiles);
+
+    // Inisialisasi tombol pintar pilih/pindai folder lokal
+    bindFolderInputSmartButton({
+        inputId: 'local-folder-path',
+        buttonId: 'btn-scan-rename',
+        scanAction: scanLocalFolder,
+        labelFilled: 'Pindai Folder',
+        iconFilled: 'search'
+    });
 
     function switchTab(mode) {
         currentMode = mode;

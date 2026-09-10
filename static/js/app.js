@@ -174,3 +174,141 @@ if (document.readyState === 'loading') {
 } else {
     initBackToTop();
 }
+
+/**
+ * Membuka dialog native File Explorer modern di komputer lokal.
+ * @param {Object} options { initialDir, title, triggerBtn }
+ * @returns {Promise<string|null>} Path folder yang dipilih atau null jika dibatalkan
+ */
+async function pickModernFolder(options = {}) {
+    const triggerBtn = options.triggerBtn;
+    let originalBtnHtml = '';
+
+    if (triggerBtn && triggerBtn.tagName === 'BUTTON') {
+        originalBtnHtml = triggerBtn.innerHTML;
+        triggerBtn.disabled = true;
+        triggerBtn.classList.add('opacity-80', 'cursor-wait');
+        triggerBtn.innerHTML = `
+            <span class="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></span>
+            <span>Membuka...</span>
+        `;
+    }
+
+    try {
+        const initParam = options.initialDir ? encodeURIComponent(options.initialDir) : '';
+        const titleParam = options.title ? encodeURIComponent(options.title) : '';
+        const res = await fetch(`/api/pick-folder?initial_dir=${initParam}&title=${titleParam}`, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        if (data.success && data.path) {
+            return data.path;
+        }
+        return null;
+    } catch (err) {
+        console.error('Gagal membuka pemilih folder:', err);
+        showToast('Gagal memunculkan dialog File Explorer.', 'error');
+        return null;
+    } finally {
+        if (triggerBtn && triggerBtn.tagName === 'BUTTON') {
+            triggerBtn.disabled = false;
+            triggerBtn.classList.remove('opacity-80', 'cursor-wait');
+            triggerBtn.innerHTML = originalBtnHtml;
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+}
+
+/**
+ * Mengatur tombol dinamis pintar untuk input path folder lokal:
+ * - Jika input KOSONG: tombol bertuliskan "Pilih Folder", klik membuka File Explorer pop-up.
+ * - Jika input TERISI: tombol bertuliskan label aksi (misal "Pindai Gambar" / "Pindai Folder"), klik memanggil scanAction.
+ */
+function bindFolderInputSmartButton({ inputId, buttonId, scanAction, labelFilled = 'Pindai Folder', iconFilled = 'search' }) {
+    const inputEl = document.getElementById(inputId);
+    const btnEl = document.getElementById(buttonId);
+    if (!inputEl || !btnEl) return;
+
+    const updateState = () => {
+        const val = inputEl.value.trim();
+        if (!val) {
+            // State A: Kosong -> Tombol "Pilih Folder"
+            btnEl.innerHTML = `<i data-lucide="folder-search" class="w-4 h-4"></i><span>Pilih Folder</span>`;
+            btnEl.title = "Buka File Explorer untuk memilih folder";
+        } else {
+            // State B: Terisi -> Tombol "Pindai Gambar" / "Pindai Folder"
+            btnEl.innerHTML = `<i data-lucide="${iconFilled}" class="w-4 h-4"></i><span>${labelFilled}</span>`;
+            btnEl.title = `Pindai file dari folder "${val}"`;
+        }
+        if (window.lucide) lucide.createIcons();
+    };
+
+    // Handle klik tombol
+    btnEl.addEventListener('click', async (e) => {
+        const val = inputEl.value.trim();
+        if (!val) {
+            // Tombol dalam mode "Pilih Folder"
+            const selectedPath = await pickModernFolder({
+                initialDir: val,
+                title: 'Pilih Folder',
+                triggerBtn: btnEl
+            });
+            if (selectedPath) {
+                inputEl.value = selectedPath;
+                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+                updateState();
+                // Jalankan pemindaian otomatis
+                if (typeof scanAction === 'function') {
+                    scanAction();
+                }
+            }
+        } else {
+            // Tombol dalam mode "Pindai"
+            if (typeof scanAction === 'function') {
+                scanAction();
+            }
+        }
+    });
+
+    // Handle ketik / paste / hapus teks pada input
+    inputEl.addEventListener('input', updateState);
+    inputEl.addEventListener('change', updateState);
+
+    // Handle tombol Enter pada keyboard
+    inputEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const val = inputEl.value.trim();
+            if (val && typeof scanAction === 'function') {
+                scanAction();
+            }
+        }
+    });
+
+    // Inisialisasi awal
+    updateState();
+}
+
+/**
+ * Helper untuk tombol pemilih folder output simpan langsung
+ * @param {string} inputId ID elemen input target (misal: 'custom-output-dir')
+ * @param {HTMLElement} [btnEl] Tombol pemicu
+ */
+async function selectCustomOutputDir(inputId, btnEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const trigger = btnEl || (typeof window !== 'undefined' && window.event ? (window.event.currentTarget || (window.event.target ? window.event.target.closest('button') : null)) : null);
+    const selected = await pickModernFolder({
+        initialDir: input.value.trim(),
+        title: 'Pilih Folder Tujuan Simpan',
+        triggerBtn: trigger
+    });
+    if (selected) {
+        input.value = selected;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+}
+
+

@@ -2,6 +2,7 @@ import io
 import os
 import shutil
 import subprocess
+import asyncio
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from contextlib import asynccontextmanager
@@ -16,7 +17,7 @@ from core.utils import (
     BASE_DIR, UPLOAD_DIR, OUTPUT_DIR,
     generate_task_id, get_task_dirs, cleanup_old_files,
     get_pdf_info, generate_pdf_thumbnail, format_bytes, natural_sort_key,
-    safe_delete_local_file
+    safe_delete_local_file, pick_modern_folder
 )
 from core.merger import merge_pdf_files
 from core.image_converter import convert_images_to_pdf, convert_pdf_to_images
@@ -587,6 +588,20 @@ async def api_open_folder(req: OpenFolderRequest):
         return JSONResponse({"success": True, "opened_path": str(folder_to_open)})
     except Exception as e:
         return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+
+
+@app.api_route("/api/pick-folder", methods=["GET", "POST"])
+async def api_pick_folder(initial_dir: Optional[str] = None, title: Optional[str] = None):
+    """Membuka dialog File Explorer modern native di komputer lokal pengguna."""
+    try:
+        dialog_title = title or "Pilih Folder"
+        init_dir = initial_dir or ""
+        selected = await asyncio.to_thread(pick_modern_folder, title=dialog_title, initial_dir=init_dir)
+        if selected:
+            return JSONResponse({"success": True, "path": selected})
+        return JSONResponse({"success": False, "cancelled": True})
+    except Exception as e:
+        return JSONResponse({"success": False, "message": str(e)}, status_code=500)
 
 
 @app.post("/api/delete-local-files")

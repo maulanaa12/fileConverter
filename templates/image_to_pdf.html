@@ -40,12 +40,12 @@
         </div>
         <div class="flex flex-col sm:flex-row gap-2">
             <div class="relative flex-1">
-                <input type="text" id="local-folder-path" placeholder="Contoh: D:\magang\1991 - 1992 (6 -1)\file-2 atau ./jpg" class="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
-                <i data-lucide="folder-search" class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3"></i>
+                <input type="text" id="local-folder-path" placeholder="Pilih folder atau tempel path (Contoh: D:\magang\photo\2014-2)" class="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                <i data-lucide="folder" class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3 pointer-events-none"></i>
             </div>
-            <button onclick="scanLocalImagesFolder()" class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-md shadow-brand-500/20 dark:shadow-none transition-all">
-                <i data-lucide="search" class="w-4 h-4"></i>
-                <span>Pindai Gambar</span>
+            <button id="btn-scan-local" type="button" class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-md shadow-brand-500/20 dark:shadow-none transition-all cursor-pointer whitespace-nowrap">
+                <i data-lucide="folder-search" class="w-4 h-4"></i>
+                <span>Pilih Folder</span>
             </button>
         </div>
     </div>
@@ -310,7 +310,13 @@
                     <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
                         <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Folder Simpan Langsung (Opsional)
                     </label>
-                    <input type="text" id="custom-output-dir" placeholder="Contoh: D:\magang\hasil" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                    <div class="flex gap-1.5">
+                        <input type="text" id="custom-output-dir" placeholder="Contoh: D:\magang\hasil" class="flex-1 px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                        <button type="button" onclick="selectCustomOutputDir('custom-output-dir')" title="Pilih folder simpan dari File Explorer" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap">
+                            <i data-lucide="folder-search" class="w-3.5 h-3.5"></i>
+                            <span>Pilih</span>
+                        </button>
+                    </div>
                     <span class="text-[10px] text-slate-500 dark:text-slate-400 block">Jika diisi, file PDF langsung disimpan di folder ini.</span>
                 </div>
 
@@ -442,6 +448,15 @@
     const fileInput = document.getElementById('file-input');
 
     setupDropzone(document.getElementById('image-dropzone'), fileInput, handleUploadedImages);
+
+    // Inisialisasi tombol pintar pilih/pindai folder lokal
+    bindFolderInputSmartButton({
+        inputId: 'local-folder-path',
+        buttonId: 'btn-scan-local',
+        scanAction: scanLocalImagesFolder,
+        labelFilled: 'Pindai Gambar',
+        iconFilled: 'search'
+    });
 
     function switchSourceMode(mode) {
         currentSourceMode = mode;

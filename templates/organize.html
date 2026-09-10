@@ -75,7 +75,13 @@
                     <label class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
                         <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Simpan Langsung ke Folder (Opsional)
                     </label>
-                    <input type="text" id="custom-output-dir" placeholder="Contoh: D:\hasil_organize atau ./file" class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none dark:focus:ring-brand-500 dark:focus:border-brand-500 font-mono">
+                    <div class="flex gap-1.5">
+                        <input type="text" id="custom-output-dir" placeholder="Contoh: D:\hasil_organize atau ./file" class="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none dark:focus:ring-brand-500 dark:focus:border-brand-500 font-mono">
+                        <button type="button" onclick="selectCustomOutputDir('custom-output-dir')" title="Pilih folder simpan dari File Explorer" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap">
+                            <i data-lucide="folder-search" class="w-3.5 h-3.5"></i>
+                            <span>Pilih</span>
+                        </button>
+                    </div>
                     <span class="text-[10px] text-slate-400 dark:text-slate-500 block">Kosongkan jika hanya ingin download via browser.</span>
                 </div>
 
