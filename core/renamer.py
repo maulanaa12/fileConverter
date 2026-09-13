@@ -4,9 +4,87 @@ import json
 import uuid
 import zipfile
 import shutil
+import multiprocessing
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from .utils import natural_sort_key
+
+
+# ============================================================
+# SEC-05: ReDoS protection helpers
+# ============================================================
+
+# Batas panjang regex pattern yang diterima
+_MAX_REGEX_LENGTH = 200
+
+# Timeout (detik) untuk eksekusi re.sub — mencegah exponential backtracking
+_REGEX_TIMEOUT_SECONDS = 2.0
+
+
+def safe_compile_regex(pattern: str, max_length: int = _MAX_REGEX_LENGTH) -> re.Pattern:
+    """
+    Compile regex pattern dengan validasi keamanan.
+
+    Raises:
+        ValueError: Jika pattern terlalu panjang atau syntax tidak valid.
+    """
+    if len(pattern) > max_length:
+        raise ValueError(
+            f"Pola regex terlalu panjang ({len(pattern)} karakter). "
+            f"Maksimum {max_length} karakter."
+        )
+    try:
+        return re.compile(pattern)
+    except re.error as e:
+        raise ValueError(f"Pola regex tidak valid: {e}")
+
+
+def _regex_sub_worker(pattern_str: str, replacement: str, string: str, result_queue):
+    """Worker function yang berjalan di proses terpisah untuk regex substitution."""
+    try:
+        result = re.sub(pattern_str, replacement, string)
+        result_queue.put(result)
+    except Exception:
+        result_queue.put(None)
+
+
+def safe_regex_sub(
+    compiled: re.Pattern,
+    replacement: str,
+    string: str,
+    timeout: float = _REGEX_TIMEOUT_SECONDS,
+) -> str:
+    """
+    Jalankan re.sub() di proses terpisah dengan timeout untuk mencegah ReDoS.
+
+    Menggunakan multiprocessing.Process karena ThreadPoolExecutor tidak bisa
+    meng-interrupt CPU-bound regex (GIL mencegah thread switch saat backtracking).
+
+    Returns:
+        Hasil substitusi, atau string asli jika timeout/error.
+    """
+    result_queue = multiprocessing.Queue()
+    process = multiprocessing.Process(
+        target=_regex_sub_worker,
+        args=(compiled.pattern, replacement, string, result_queue),
+    )
+    process.start()
+    process.join(timeout=timeout)
+
+    if process.is_alive():
+        # Timeout — regex masih backtracking, kill prosesnya
+        process.terminate()
+        process.join(timeout=1)
+        if process.is_alive():
+            process.kill()
+            process.join(timeout=1)
+        return string  # Kembalikan string asli
+
+    # Proses selesai dalam waktu — ambil hasil
+    if not result_queue.empty():
+        result = result_queue.get_nowait()
+        return result if result is not None else string
+    return string
 
 def calculate_new_names(
     file_names: List[str],
@@ -29,6 +107,7 @@ def calculate_new_names(
     """
     results = []
     seen_names = set()
+    _replace_cache = {}  # Cache untuk compiled regex (SEC-05)
     
     for idx, orig_name in enumerate(file_names):
         p = Path(orig_name)
@@ -66,8 +145,21 @@ def calculate_new_names(
             if find_text:
                 if is_regex:
                     try:
-                        new_stem = re.sub(find_text, replace_text, stem)
-                    except Exception:
+                        # SEC-05: Compile sekali dengan validasi panjang & syntax
+                        if '_compiled_regex' not in _replace_cache:
+                            _replace_cache['_compiled_regex'] = safe_compile_regex(find_text)
+                        compiled = _replace_cache['_compiled_regex']
+
+                        if _replace_cache.get('_regex_safe'):
+                            # Pattern sudah terbukti aman (canary passed), pakai langsung
+                            new_stem = compiled.sub(replace_text, stem)
+                        else:
+                            # Canary test: jalankan di proses terpisah dengan timeout
+                            new_stem = safe_regex_sub(compiled, replace_text, stem)
+                            if new_stem != stem or not compiled.search(stem):
+                                # Berhasil dalam waktu — tandai aman untuk sisa file
+                                _replace_cache['_regex_safe'] = True
+                    except ValueError:
                         new_stem = stem
                 else:
                     new_stem = stem.replace(find_text, replace_text)

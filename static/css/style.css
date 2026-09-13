@@ -1,17 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+/* LocalPDF Studio - custom styles (tema via CSS vars, flip oleh html.dark) */
 
+/* Plus Jakarta Sans - bundled lokal (latin subset) */
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+    font-family: 'Plus Jakarta Sans';
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url('/static/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2');
+}
+
+/* Theme tokens */
 :root {
-    --primary: #e5322d;
-    --primary-hover: #cb241f;
-    --primary-light: #fef2f2;
-    --primary-border: #fecaca;
-    --dark-bg: #0f172a;
-    --dark-card: #1e293b;
-    --dark-border: #334155;
+    --primary: #0d9488;
+    --primary-hover: #0f766e;
+    --primary-soft: #f0fdfa;
+    --primary-border: #99f6e4;
+
+    --surface: #ffffff;
+    --surface-muted: #f8fafc;
+    --border-c: #cbd5e1;
+    --scrollbar: #cbd5e1;
+    --scrollbar-hover: #94a3b8;
+}
+
+html.dark {
+    --primary: #14b8a6;
+    --primary-hover: #2dd4bf;
+    --primary-soft: rgba(20, 184, 166, 0.08);
+    --primary-border: rgba(45, 212, 191, 0.35);
+
+    --surface: #1e293b;
+    --surface-muted: #0f172a;
+    --border-c: #334155;
+    --scrollbar: #334155;
+    --scrollbar-hover: #475569;
 }
 
 body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
 /* Custom Scrollbar */
@@ -23,31 +77,34 @@ body {
     background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: var(--scrollbar);
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: var(--scrollbar-hover);
+}
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar) transparent;
 }
 
-/* Dropzone styling */
+/* Dropzone styling (warna dragover via var agar ikut tema) */
 .dropzone {
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed var(--border-c);
     transition: all 0.25s ease;
 }
 .dropzone.dragover {
-    border-color: #e5322d;
-    background-color: #fef2f2;
+    border-color: var(--primary);
+    background-color: var(--primary-soft);
     transform: scale(1.01);
 }
 
 /* Sortable items animation */
 .sortable-ghost {
     opacity: 0.4;
-    background-color: #fee2e2 !important;
-    border: 2px dashed #e5322d !important;
+    background-color: var(--primary-soft) !important;
+    border: 2px dashed var(--primary) !important;
 }
-
 .sortable-chosen {
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     transform: scale(1.02);
@@ -55,11 +112,14 @@ body {
 
 /* Tool card hover */
 .tool-card {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .tool-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+.dark .tool-card:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 }
 
 /* Pulse animation for processing */
@@ -71,7 +131,128 @@ body {
     animation: pulse-subtle 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Badge colors */
-.badge-pdf { background-color: #fee2e2; color: #b91c1c; }
-.badge-img { background-color: #e0f2fe; color: #0369a1; }
-.badge-zip { background-color: #fef3c7; color: #b45309; }
+/* Pengganti plugin tailwindcss-animate (sebelumnya class no-op) */
+@keyframes modal-pop-kf {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+.modal-pop {
+    animation: modal-pop-kf 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes fade-in-fast-kf {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.fade-in-fast {
+    animation: fade-in-fast-kf 0.15s ease-out;
+}
+
+/* Badge colors (file-type chips) */
+.badge-pdf { background-color: rgba(13, 148, 136, 0.12); color: #0f766e; }
+.badge-img { background-color: rgba(2, 132, 199, 0.12); color: #0369a1; }
+.badge-zip { background-color: rgba(217, 119, 6, 0.14); color: #b45309; }
+
+html.dark .badge-pdf { color: #2dd4bf; }
+html.dark .badge-img { color: #38bdf8; }
+html.dark .badge-zip { color: #fbbf24; }
+
+/* Custom resizable preview container */
+#preview-files-list,
+.custom-resizable {
+    resize: vertical !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    contain: paint;
+}
+#preview-files-list::-webkit-resizer,
+.custom-resizable::-webkit-resizer {
+    background-color: transparent;
+    border-bottom: 3px solid var(--primary, #0d9488);
+    border-right: 3px solid var(--primary, #0d9488);
+}
+
+/* Danger Action Utilities (Delete Modal & Destructive Buttons) */
+.bg-rose-50 {
+    background-color: #fff1f2 !important;
+}
+.bg-rose-600 {
+    background-color: #e11d48 !important;
+}
+.hover\:bg-rose-700:hover {
+    background-color: #be123c !important;
+}
+.shadow-rose-600\/25 {
+    box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.25), 0 4px 6px -4px rgba(225, 29, 72, 0.25) !important;
+}
+
+/* Sidebar sticky & flex layout (Image to PDF) */
+@media (min-width: 1024px) {
+    .image-pdf-sidebar {
+        position: sticky;
+        top: 5rem;
+        z-index: 20;
+    }
+    .image-pdf-card {
+        max-height: calc(100vh - 6.5rem);
+        display: flex;
+        flex-direction: column;
+    }
+    .image-pdf-settings-scroll {
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+}
+
+/* Missing utility classes */
+.bottom-0 {
+    bottom: 0;
+}
+.-mx-4 {
+    margin-left: -1rem;
+    margin-right: -1rem;
+}
+.-mb-4 {
+    margin-bottom: -1rem;
+}
+
+/* Floating Scroll-to-Top Button */
+.btn-back-to-top {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 40;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    background-color: var(--primary, #0d9488);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.35), 0 4px 6px -4px rgba(13, 148, 136, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(1rem) scale(0.9);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+.btn-back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+.btn-back-to-top:hover {
+    background-color: var(--primary-hover, #0f766e);
+    transform: translateY(-2px) scale(1.06);
+    box-shadow: 0 14px 20px -3px rgba(13, 148, 136, 0.45), 0 6px 8px -4px rgba(13, 148, 136, 0.25);
+}
+.btn-back-to-top:active {
+    transform: translateY(0) scale(0.95);
+}
+html.dark .btn-back-to-top {
+    box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+
