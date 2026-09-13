@@ -1,7 +1,7 @@
 {
   "name": "localpdf-studio-frontend",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Frontend build tooling for LocalPDF Studio (Tailwind CSS + vendored runtime assets)",
   "scripts": {
     "build": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.css --minify",
