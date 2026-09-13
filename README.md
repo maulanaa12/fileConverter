@@ -33,8 +33,8 @@ Kebanyakan tools PDF online mengharuskan Anda **mengunggah dokumen ke server** �
 
 | Versi | Tanggal | Download | Catatan |
 |-------|---------|----------|---------|
-| **v1.2.0** (Terbaru) | September 2026 | [⬇️ LocalPDF_Studio_Setup_v1.2.0.exe](https://github.com/maulanaa12/fileConverter/releases/tag/v1.2.0) | Security hardening, 3-level compress, dependency pinning |
-| v1.1.0 | September 2026 | [⬇️ LocalPDF_Studio_Setup_v1.1.0.exe](https://github.com/maulanaa12/fileConverter/releases/tag/v1.1.0) | Semua 7 fitur inti, desktop wrapper, native folder picker |
+| **v1.2.0** (Terbaru) | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases/latest) | Security hardening, 3-level compress, dependency pinning |
+| v1.1.0 | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases) | Semua 7 fitur inti, desktop wrapper, native folder picker |
 
 > **Persyaratan Sistem**: Windows 10/11 (64-bit). Tidak perlu install Python — semua sudah di-bundle dalam installer.
 
