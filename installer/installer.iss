@@ -2,7 +2,7 @@
 ; Menghasilkan file installer tunggal: LocalPDF_Studio_Setup.exe
 
 #define MyAppName "LocalPDF Studio"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.2.0"
 #define MyAppPublisher "LocalPDF Studio"
 #define MyAppURL "https://github.com"
 #define MyAppExeName "LocalPDFStudio.exe"

@@ -53,42 +53,9 @@ echo [BERHASIL] Bundel aplikasi desktop berhasil dibuat di:
 echo %~dp0dist\LocalPDFStudio\
 echo.
 
-:: 6. Cek apakah Inno Setup Compiler (ISCC.exe) terpasang
-set "ISCC_PATH="
-if exist "%LocalAppData%\Programs\Inno Setup 6\ISCC.exe" (
-    set "ISCC_PATH=%LocalAppData%\Programs\Inno Setup 6\ISCC.exe"
-) else if exist "%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe" (
-    set "ISCC_PATH=%ProgramFiles(x86)%\Inno Setup 6\ISCC.exe"
-) else if exist "%ProgramFiles%\Inno Setup 6\ISCC.exe" (
-    set "ISCC_PATH=%ProgramFiles%\Inno Setup 6\ISCC.exe"
-) else (
-    where ISCC.exe >nul 2>&1
-    if !errorlevel! equ 0 (
-        set "ISCC_PATH=ISCC.exe"
-    )
-)
-
-if defined ISCC_PATH (
-    echo [INFO] Inno Setup ditemukan: "!ISCC_PATH!"
-    echo [INFO] Mengompilasi installer tunggal LocalPDF_Studio_Setup.exe...
-    if not exist "installer\output" mkdir "installer\output"
-    "!ISCC_PATH!" "installer\installer.iss"
-    if !errorlevel! equ 0 (
-        echo.
-        echo ======================================================================
-        echo [SELESAI] Installer siap dibagikan!
-        echo File Setup: %~dp0installer\output\LocalPDF_Studio_Setup.exe
-        echo ======================================================================
-    ) else (
-        echo [PERINGATAN] Gagal mengompilasi installer Inno Setup. Anda tetap bisa menggunakan folder di dist\LocalPDFStudio\
-    )
-) else (
-    echo [CATATAN] Inno Setup 6 belum terpasang di komputer ini.
-    echo Anda dapat langsung membagikan folder portabel:
-    echo   %~dp0dist\LocalPDFStudio\
-    echo Atau download Inno Setup gratis di https://jrsoftware.org/isdl.php
-    echo untuk membuat file single-installer LocalPDF_Studio_Setup.exe
-)
+:: 6. Cek dan jalankan Inno Setup Compiler
+echo [INFO] Memeriksa Inno Setup Compiler...
+python scripts\run_inno_setup.py
 
 echo.
 echo Tekan tombol apa saja untuk menutup jendela ini...

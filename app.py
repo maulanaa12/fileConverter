@@ -1,5 +1,6 @@
 import io
 import os
+import re
 import shutil
 import subprocess
 import asyncio
@@ -11,7 +12,10 @@ from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, Bac
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from core.utils import (
     BASE_DIR, UPLOAD_DIR, OUTPUT_DIR,
@@ -27,25 +31,82 @@ from core.renamer import (
 )
 from core.splitter import split_pdf, organize_pdf_pages
 from core.compressor import compress_pdf
+from core.path_security import (
+    get_registry, validate_path_allowed, validate_file_extension,
+    ALLOWED_PREVIEW_EXTENSIONS, ALLOWED_DELETE_EXTENSIONS
+)
+from core.rate_limiter import limiter, RATE_HEAVY, RATE_UPLOAD, RATE_MUTATION, RATE_GENERAL
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Bersihkan file sampah saat startup
     cleanup_old_files(max_age_seconds=7200)
+    # Registrasi direktori internal sebagai allowed
+    registry = get_registry()
+    registry.register(UPLOAD_DIR)
+    registry.register(OUTPUT_DIR)
     yield
 
 
 app = FastAPI(
     title="LocalPDF Studio",
     description="Aplikasi Web Lokal Pengolah PDF Serbaguna",
-    version="1.0.0",
-    lifespan=lifespan
+    version="1.2.0",
+    lifespan=lifespan,
+    docs_url=None,       # SEC-10: Disable Swagger UI
+    redoc_url=None,      # SEC-10: Disable ReDoc
+    openapi_url=None,    # SEC-10: Disable OpenAPI JSON schema
 )
+
+# SEC-07: CORS configuration — hanya izinkan origin localhost terpercaya
+ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:8041",
+    "http://127.0.0.1:8041",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-Requested-With"],
+)
+
+# SEC-08: Rate limiter setup
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+# SEC-06: Regex pattern untuk task_id yang valid (alfanumerik, underscore, dash)
+VALID_TASK_ID_PATTERN = re.compile(r'^[a-zA-Z0-9_-]+$')
 
 # Mounting static files & templates
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+
+def sanitize_error(e: Exception) -> str:
+    """SEC-10: Mengembalikan pesan error yang aman untuk ditampilkan ke client.
+
+    Menghapus path filesystem yang mungkin mengandung username atau
+    informasi struktur direktori sensitif dari pesan error.
+    """
+    msg = str(e)
+    # Hapus path filesystem Windows (C:\Users\username\...)
+    sanitized = re.sub(
+        r'[A-Za-z]:\\(?:Users|home)\\[^\\\s\'"]+(?:\\[^\\\s\'"]*)*',
+        '<path>',
+        msg
+    )
+    # Hapus path Linux/Mac absolute (/home/username/... atau /Users/username/...)
+    sanitized = re.sub(
+        r'/(?:home|Users)/[^/\s\'"]+(?:/[^/\s\'"]*)*',
+        '<path>',
+        sanitized
+    )
+    return sanitized
 
 
 def handle_custom_save(source_file: Path, custom_output_dir: Optional[str]) -> Optional[str]:
@@ -59,11 +120,19 @@ def handle_custom_save(source_file: Path, custom_output_dir: Optional[str]) -> O
         dest_file = clean_dir / source_file.name
         shutil.copy2(source_file, dest_file)
 
-        # Jika file adalah zip, ekstrak juga isi file PDF/gambarnya langsung ke folder tujuan
+        # Jika file adalah zip, ekstrak isi file ke folder tujuan
         if source_file.suffix.lower() == '.zip':
             try:
                 with zipfile.ZipFile(source_file, 'r') as z:
-                    z.extractall(clean_dir)
+                    # SEC-09: Validasi setiap entry untuk mencegah ZIP Slip
+                    for entry in z.infolist():
+                        if entry.is_dir():
+                            continue
+                        target = (clean_dir / entry.filename).resolve()
+                        if not target.is_relative_to(clean_dir):
+                            print(f"SEC-09: ZIP Slip blocked — '{entry.filename}'")
+                            continue
+                        z.extract(entry, clean_dir)
             except Exception:
                 pass
 
@@ -75,7 +144,8 @@ def handle_custom_save(source_file: Path, custom_output_dir: Optional[str]) -> O
 
 
 @app.get("/api/health")
-async def api_health():
+@limiter.limit(RATE_GENERAL)
+async def api_health(request: Request):
     """Health check endpoint untuk desktop launcher."""
     return {"status": "ok", "app": "LocalPDF Studio"}
 
@@ -205,7 +275,8 @@ class DeleteLocalFilesRequest(BaseModel):
 # ==========================================
 
 @app.post("/api/upload")
-async def api_upload(files: List[UploadFile] = File(...)):
+@limiter.limit(RATE_UPLOAD)
+async def api_upload(request: Request, files: List[UploadFile] = File(...)):
     """Mengunggah satu atau beberapa file ke direktori task sementara."""
     task_id = generate_task_id()
     task_upload, _ = get_task_dirs(task_id)
@@ -272,7 +343,8 @@ async def api_upload(files: List[UploadFile] = File(...)):
 
 
 @app.post("/api/merge")
-async def api_merge(req: MergeRequest):
+@limiter.limit(RATE_HEAVY)
+async def api_merge(request: Request, req: MergeRequest):
     """Menggabungkan file-file PDF yang telah diunggah."""
     try:
         task_id = generate_task_id()
@@ -294,11 +366,12 @@ async def api_merge(req: MergeRequest):
         result["saved_to_folder"] = handle_custom_save(out_path, req.custom_output_dir)
         return JSONResponse(result)
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/image-to-pdf")
-async def api_image_to_pdf(req: ImageToPdfRequest):
+@limiter.limit(RATE_HEAVY)
+async def api_image_to_pdf(request: Request, req: ImageToPdfRequest):
     """Mengonversi sekumpulan gambar menjadi PDF."""
     try:
         task_id = generate_task_id()
@@ -330,11 +403,12 @@ async def api_image_to_pdf(req: ImageToPdfRequest):
         result["saved_to_folder"] = handle_custom_save(actual_path, req.custom_output_dir)
         return JSONResponse(result)
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/pdf-to-image")
-async def api_pdf_to_image(req: PdfToImageRequest):
+@limiter.limit(RATE_HEAVY)
+async def api_pdf_to_image(request: Request, req: PdfToImageRequest):
     """Mengekstrak halaman PDF menjadi gambar JPG/PNG (ZIP)."""
     try:
         task_id = generate_task_id()
@@ -357,21 +431,23 @@ async def api_pdf_to_image(req: PdfToImageRequest):
         result["saved_to_folder"] = handle_custom_save(actual_path, req.custom_output_dir)
         return JSONResponse(result)
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/rename/preview")
-async def api_rename_preview(req: RenamePreviewRequest):
+@limiter.limit(RATE_GENERAL)
+async def api_rename_preview(request: Request, req: RenamePreviewRequest):
     """Menghitung pratinjau live sebelum eksekusi rename."""
     try:
         previews = calculate_new_names(req.filenames, **req.rule_options)
         return JSONResponse({"success": True, "previews": previews})
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/rename/process-upload")
-async def api_rename_process_upload(req: RenameUploadRequest):
+@limiter.limit(RATE_MUTATION)
+async def api_rename_process_upload(request: Request, req: RenameUploadRequest):
     """Memproses rename file yang diunggah dan menghasilkan ZIP."""
     try:
         task_id = generate_task_id()
@@ -388,39 +464,59 @@ async def api_rename_process_upload(req: RenameUploadRequest):
         result["saved_to_folder"] = handle_custom_save(out_path, req.custom_output_dir)
         return JSONResponse(result)
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/rename/process-local")
-async def api_rename_process_local(req: RenameLocalRequest):
+@limiter.limit(RATE_MUTATION)
+async def api_rename_process_local(request: Request, req: RenameLocalRequest):
     """Memproses rename langsung pada folder lokal komputer dengan pengamanan 2-pass & history JSON."""
     try:
+        # Validasi folder path ada di allowed registry
+        validate_path_allowed(req.folder_path)
+
         result = process_rename_local_folder(
             folder_path=req.folder_path,
             rule_options=req.rule_options
         )
         return JSONResponse(result)
+    except HTTPException:
+        raise
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/rename/undo-local")
-async def api_rename_undo_local(req: UndoLocalRequest):
+@limiter.limit(RATE_MUTATION)
+async def api_rename_undo_local(request: Request, req: UndoLocalRequest):
     """Membatalkan (Undo) rename terakhir pada folder lokal."""
     try:
+        # Validasi folder path ada di allowed registry
+        validate_path_allowed(req.folder_path)
+
         result = undo_rename_local_folder(req.folder_path)
         return JSONResponse(result)
+    except HTTPException:
+        raise
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.get("/api/local-file-preview")
-async def api_local_file_preview(path: str, thumb: bool = False):
+@limiter.limit(RATE_GENERAL)
+async def api_local_file_preview(request: Request, path: str, thumb: bool = False):
     """Menyajikan preview thumbnail cepat atau gambar resolusi penuh dari harddisk lokal."""
     try:
         p = Path(path.strip("'\"")).resolve()
+
+        # SEC-02 FIX: Validasi path berada di allowed directory
+        validate_path_allowed(p)
+
         if not p.exists() or not p.is_file():
             raise HTTPException(status_code=404, detail="File tidak ditemukan")
+
+        # SEC-02 FIX: Validasi strict tipe file — hanya gambar dan PDF
+        validate_file_extension(p, ALLOWED_PREVIEW_EXTENSIONS)
 
         ext = p.suffix.lower()
         if ext in ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff'):
@@ -449,19 +545,24 @@ async def api_local_file_preview(path: str, thumb: bool = False):
                 from fastapi.responses import Response
                 img_data = base64.b64decode(thumb_b64.split(",", 1)[1])
                 return Response(content=img_data, media_type="image/png")
-            return FileResponse(p)
-        else:
-            return FileResponse(p)
+            raise HTTPException(status_code=500, detail="Gagal membuat preview PDF")
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=sanitize_error(e))
 
 
 @app.get("/api/browse-local-dir")
-async def api_browse_local_dir(path: str):
+@limiter.limit(RATE_GENERAL)
+async def api_browse_local_dir(request: Request, path: str):
     """Membaca daftar file dari path folder lokal komputer beserta url preview."""
     try:
         import urllib.parse
         target_dir = Path(path.strip("'\"")).resolve()
+
+        # SEC-01 FIX: Validasi folder ada di allowed registry
+        validate_path_allowed(target_dir)
+
         if not target_dir.exists() or not target_dir.is_dir():
             return JSONResponse({"success": False, "message": f"Folder '{path}' tidak ditemukan."}, status_code=404)
             
@@ -490,12 +591,15 @@ async def api_browse_local_dir(path: str):
             "folder": str(target_dir),
             "files": files
         })
+    except HTTPException:
+        raise
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/split")
-async def api_split(req: SplitRequest):
+@limiter.limit(RATE_HEAVY)
+async def api_split(request: Request, req: SplitRequest):
     """Memisahkan PDF berdasarkan rentang atau menjadi satu per satu halaman."""
     try:
         task_id = generate_task_id()
@@ -518,11 +622,12 @@ async def api_split(req: SplitRequest):
         result["saved_to_folder"] = handle_custom_save(actual_path, req.custom_output_dir)
         return JSONResponse(result)
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/organize")
-async def api_organize(req: OrganizeRequest):
+@limiter.limit(RATE_HEAVY)
+async def api_organize(request: Request, req: OrganizeRequest):
     """Menyusun ulang, memutar, atau menghapus halaman PDF."""
     try:
         task_id = generate_task_id()
@@ -544,11 +649,12 @@ async def api_organize(req: OrganizeRequest):
         result["saved_to_folder"] = handle_custom_save(out_path, req.custom_output_dir)
         return JSONResponse(result)
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/compress")
-async def api_compress(req: CompressRequest):
+@limiter.limit(RATE_HEAVY)
+async def api_compress(request: Request, req: CompressRequest):
     """Mengompres ukuran dokumen PDF."""
     try:
         task_id = generate_task_id()
@@ -567,51 +673,67 @@ async def api_compress(req: CompressRequest):
         result["saved_to_folder"] = handle_custom_save(out_path, req.custom_output_dir)
         return JSONResponse(result)
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.post("/api/open-folder")
-async def api_open_folder(req: OpenFolderRequest):
+@limiter.limit(RATE_GENERAL)
+async def api_open_folder(request: Request, req: OpenFolderRequest):
     """Membuka folder lokal langsung di Windows File Explorer."""
     try:
         target_path = Path(req.path.strip('"\'')).resolve()
         folder_to_open = target_path.parent if target_path.is_file() else target_path
-        
+
+        # SEC-04: Validasi path ada di allowed registry
+        validate_path_allowed(folder_to_open)
+
         if not folder_to_open.exists():
             return JSONResponse({"success": False, "message": f"Folder tidak ditemukan: {folder_to_open}"}, status_code=404)
-            
+
+        # Pastikan target adalah directory, bukan file
+        if not folder_to_open.is_dir():
+            return JSONResponse({"success": False, "message": "Path bukan folder yang valid."}, status_code=400)
+
+        # Gunakan subprocess.Popen eksplisit, bukan os.startfile() yang bisa
+        # mengeksekusi arbitrary file berdasarkan file association.
         if os.name == 'nt':
-            os.startfile(str(folder_to_open))
+            subprocess.Popen(["explorer.exe", str(folder_to_open)])
         else:
             subprocess.Popen(["xdg-open", str(folder_to_open)])
             
         return JSONResponse({"success": True, "opened_path": str(folder_to_open)})
+    except HTTPException:
+        raise
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 @app.api_route("/api/pick-folder", methods=["GET", "POST"])
-async def api_pick_folder(initial_dir: Optional[str] = None, title: Optional[str] = None):
+@limiter.limit(RATE_GENERAL)
+async def api_pick_folder(request: Request, initial_dir: Optional[str] = None, title: Optional[str] = None):
     """Membuka dialog File Explorer modern native di komputer lokal pengguna."""
     try:
         dialog_title = title or "Pilih Folder"
         init_dir = initial_dir or ""
         selected = await asyncio.to_thread(pick_modern_folder, title=dialog_title, initial_dir=init_dir)
         if selected:
+            # Registrasi folder yang dipilih user ke allowed registry
+            get_registry().register(selected)
             return JSONResponse({"success": True, "path": selected})
         return JSONResponse({"success": False, "cancelled": True})
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=500)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=500)
 
 
 @app.post("/api/delete-local-files")
-async def api_delete_local_files(req: DeleteLocalFilesRequest):
+@limiter.limit(RATE_MUTATION)
+async def api_delete_local_files(request: Request, req: DeleteLocalFilesRequest):
     """Menghapus satu atau beberapa file gambar lokal ke Recycle Bin atau secara langsung."""
     try:
         if not req.paths:
             return JSONResponse({"success": False, "message": "Tidak ada file yang dipilih untuk dihapus."}, status_code=400)
             
-        img_ext = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff')
+        registry = get_registry()
         deleted_files = []
         failed_files = []
         
@@ -619,11 +741,16 @@ async def api_delete_local_files(req: DeleteLocalFilesRequest):
             clean_path = raw_path.strip('\"\'')
             p = Path(clean_path).resolve()
             
+            # SEC-03 FIX: Validasi path berada di allowed directory
+            if not registry.is_allowed(p):
+                failed_files.append({"path": raw_path, "reason": "Akses ditolak — folder belum dipilih via file picker"})
+                continue
+            
             if not p.exists() or not p.is_file():
                 failed_files.append({"path": raw_path, "reason": "File tidak ditemukan"})
                 continue
                 
-            if p.suffix.lower() not in img_ext:
+            if p.suffix.lower() not in ALLOWED_DELETE_EXTENSIONS:
                 failed_files.append({"path": raw_path, "reason": "Bukan file gambar yang didukung"})
                 continue
                 
@@ -647,20 +774,37 @@ async def api_delete_local_files(req: DeleteLocalFilesRequest):
             "message": message
         })
     except Exception as e:
-        return JSONResponse({"success": False, "message": str(e)}, status_code=400)
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
 
 
 @app.get("/api/download/{task_id}/{filename}")
-async def api_download(task_id: str, filename: str):
+@limiter.limit(RATE_GENERAL)
+async def api_download(request: Request, task_id: str, filename: str):
     """Mengunduh file output yang dihasilkan."""
-    file_path = OUTPUT_DIR / task_id / filename
+    # SEC-06: Validasi task_id format (hanya alfanumerik, underscore, dash)
+    if not VALID_TASK_ID_PATTERN.match(task_id):
+        raise HTTPException(status_code=400, detail="Format task ID tidak valid.")
+
+    # SEC-06: Sanitasi filename — ambil basename saja
+    safe_filename = Path(filename).name
+    if not safe_filename or safe_filename in ('.', '..'):
+        raise HTTPException(status_code=400, detail="Nama file tidak valid.")
+
+    # SEC-06: Bangun path dan verifikasi canonical path tetap di OUTPUT_DIR
+    file_path = (OUTPUT_DIR / task_id / safe_filename).resolve()
+    if not file_path.is_relative_to(OUTPUT_DIR.resolve()):
+        raise HTTPException(status_code=403, detail="Akses ditolak.")
+
     if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File yang diminta tidak ditemukan atau sudah kedaluwarsa.")
-        
+        raise HTTPException(
+            status_code=404,
+            detail="File yang diminta tidak ditemukan atau sudah kedaluwarsa."
+        )
+
     return FileResponse(
         path=str(file_path),
-        filename=filename,
+        filename=safe_filename,
         media_type="application/octet-stream"
     )
 

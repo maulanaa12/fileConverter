@@ -65,9 +65,24 @@
 
                 <div class="space-y-2">
                     <label class="cursor-pointer block">
+                        <input type="radio" name="compress-level" value="low" class="peer hidden">
+                        <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300 transition-colors cursor-pointer">
+                            <span class="block">📄 Kompresi Ringan</span>
+                            <span class="block font-normal text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Optimalkan struktur PDF tanpa mengubah kualitas gambar</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer block">
                         <input type="radio" name="compress-level" value="medium" checked class="peer hidden">
                         <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300 transition-colors cursor-pointer">
-                            ⚡ Kompresi Optimal (Rekomendasi)
+                            <span class="block">⚡ Kompresi Optimal (Rekomendasi)</span>
+                            <span class="block font-normal text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Keseimbangan ukuran file dan kualitas gambar</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer block">
+                        <input type="radio" name="compress-level" value="high" class="peer hidden">
+                        <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300 transition-colors cursor-pointer">
+                            <span class="block">🔥 Kompresi Maksimal</span>
+                            <span class="block font-normal text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Ukuran terkecil, gambar dikompres agresif</span>
                         </div>
                     </label>
                 </div>
