@@ -32,7 +32,7 @@ def main():
         if res.returncode == 0:
             print('')
             print('======================================================================')
-            print('[SELESAI] Installer v1.2.0 siap dibagikan!')
+            print('[SELESAI] Installer v1.2.1 siap dibagikan!')
             print(f'File Setup: {Path.cwd() / "installer" / "output" / "LocalPDF_Studio_Setup.exe"}')
             print('======================================================================')
         else:

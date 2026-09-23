@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="LocalPDF Studio",
     description="Aplikasi Web Lokal Pengolah PDF Serbaguna",
-    version="1.2.0",
+    version="1.2.1",
     lifespan=lifespan,
     docs_url=None,       # SEC-10: Disable Swagger UI
     redoc_url=None,      # SEC-10: Disable ReDoc
@@ -503,7 +503,7 @@ async def api_rename_undo_local(request: Request, req: UndoLocalRequest):
 
 
 @app.get("/api/local-file-preview")
-@limiter.limit(RATE_GENERAL)
+@limiter.exempt
 async def api_local_file_preview(request: Request, path: str, thumb: bool = False):
     """Menyajikan preview thumbnail cepat atau gambar resolusi penuh dari harddisk lokal."""
     try:
@@ -535,7 +535,11 @@ async def api_local_file_preview(request: Request, path: str, thumb: bool = Fals
                         rgb_im = im.convert("RGB")
                         rgb_im.save(buf, format="JPEG", quality=80)
                         media_type = "image/jpeg"
-                    return Response(content=buf.getvalue(), media_type=media_type)
+                    return Response(
+                        content=buf.getvalue(),
+                        media_type=media_type,
+                        headers={"Cache-Control": "private, max-age=86400"}
+                    )
             else:
                 return FileResponse(p)
         elif ext == '.pdf':
@@ -544,7 +548,11 @@ async def api_local_file_preview(request: Request, path: str, thumb: bool = Fals
                 import base64
                 from fastapi.responses import Response
                 img_data = base64.b64decode(thumb_b64.split(",", 1)[1])
-                return Response(content=img_data, media_type="image/png")
+                return Response(
+                    content=img_data,
+                    media_type="image/png",
+                    headers={"Cache-Control": "private, max-age=86400"}
+                )
             raise HTTPException(status_code=500, detail="Gagal membuat preview PDF")
     except HTTPException:
         raise

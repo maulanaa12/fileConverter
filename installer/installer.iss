@@ -2,7 +2,7 @@
 ; Menghasilkan file installer tunggal: LocalPDF_Studio_Setup.exe
 
 #define MyAppName "LocalPDF Studio"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.2.1"
 #define MyAppPublisher "LocalPDF Studio"
 #define MyAppURL "https://github.com"
 #define MyAppExeName "LocalPDFStudio.exe"
@@ -43,7 +43,35 @@ Source: "..\dist\LocalPDFStudio\*"; DestDir: "{app}"; Flags: ignoreversion recur
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\static\app_icon.ico"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\static\app_icon.ico"; Tasks: desktopicon
+; Desktop shortcut is created via [Code] to handle OneDrive permission errors gracefully
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  DesktopPath: String;
+  ShortcutPath: String;
+begin
+  if (CurStep = ssPostInstall) and WizardIsTaskSelected('desktopicon') then
+  begin
+    DesktopPath := ExpandConstant('{autodesktop}');
+    ShortcutPath := DesktopPath + '\{#MyAppName}.lnk';
+    try
+      CreateShellLink(
+        ShortcutPath,
+        '',
+        ExpandConstant('{app}\{#MyAppExeName}'),
+        '',
+        ExpandConstant('{app}'),
+        ExpandConstant('{app}\static\app_icon.ico'),
+        0,
+        SW_SHOWNORMAL);
+    except
+      MsgBox('Desktop shortcut could not be created because the Desktop folder is managed by OneDrive or access was denied.' + #13#10 + #13#10 +
+             'The application has been installed successfully. You can launch it from the Start Menu.',
+             mbInformation, MB_OK);
+    end;
+  end;
+end;

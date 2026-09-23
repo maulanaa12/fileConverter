@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.0-teal" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.1-teal" alt="Version">
   <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/python-3.10+-yellow" alt="Python">
@@ -33,7 +33,8 @@ Kebanyakan tools PDF online mengharuskan Anda **mengunggah dokumen ke server** �
 
 | Versi | Tanggal | Download | Catatan |
 |-------|---------|----------|---------|
-| **v1.2.0** (Terbaru) | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases/latest) | Security hardening, 3-level compress, dependency pinning |
+| **v1.2.1** (Terbaru) | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases/latest) | Indikator nomor file & halaman pada Lightbox gambar, update bundle |
+| v1.2.0 | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases) | Security hardening, 3-level compress, dependency pinning |
 | v1.1.0 | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases) | Semua 7 fitur inti, desktop wrapper, native folder picker |
 
 > **Persyaratan Sistem**: Windows 10/11 (64-bit). Tidak perlu install Python — semua sudah di-bundle dalam installer.
@@ -136,6 +137,13 @@ Perkecil ukuran file PDF dengan 3 level kompresi:
 ---
 
 ## 📋 Changelog
+
+### v1.2.1 — September 2026
+**UX & Image-to-PDF Lightbox Grouping**
+
+- ✅ **Penomoran File di Lightbox**: Menampilkan badge nomor file dan posisi halaman (contoh: `File #1 (1/3)`) di bagian tengah atas modal pratinjau (Lightbox) saat mode Pisahkan File PDF aktif.
+- ✅ Menyesuaikan dinamis saat navigasi gambar (panah keyboard / klik tombol) serta penanganan status item yang diabaikan (`Diabaikan`).
+- ✅ Pembaruan nomor versi rilis ke `v1.2.1`.
 
 ### v1.2.0 — September 2026
 **Security Hardening & UX Fix**

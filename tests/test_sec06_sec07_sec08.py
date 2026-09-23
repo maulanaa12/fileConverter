@@ -249,6 +249,35 @@ def test_sec08_rate_limit_headers_present():
     print("  [PASS] test_sec08_rate_limit_headers_present PASSED")
 
 
+def test_sec08_local_file_preview_exempt():
+    """Endpoint /api/local-file-preview harus exempt dari rate limit (>30 req/min)."""
+    import io
+    from PIL import Image as PILImage
+    from core.path_security import get_registry
+
+    # Buat file gambar sementara
+    test_dir = OUTPUT_DIR / "preview_test"
+    test_dir.mkdir(parents=True, exist_ok=True)
+    img_path = test_dir / "test_thumb.jpg"
+    im = PILImage.new("RGB", (100, 100), color="blue")
+    im.save(img_path, format="JPEG")
+
+    try:
+        get_registry().register(test_dir)
+        client = get_test_client()
+
+        # Kirim 35 request (lebih dari default limit 30/minute)
+        for i in range(35):
+            resp = client.get(f"/api/local-file-preview?path={img_path}&thumb=true")
+            assert resp.status_code == 200, f"Request {i+1} failed with {resp.status_code}"
+            assert resp.headers.get("cache-control") == "private, max-age=86400"
+        print("  [PASS] test_sec08_local_file_preview_exempt PASSED")
+    finally:
+        import shutil
+        if test_dir.exists():
+            shutil.rmtree(test_dir)
+
+
 # ============================================================
 # Runner
 # ============================================================
@@ -277,5 +306,6 @@ if __name__ == "__main__":
     test_sec08_within_limit_succeeds()
     test_sec08_heavy_endpoint_rate_limited()
     test_sec08_rate_limit_headers_present()
+    test_sec08_local_file_preview_exempt()
 
     print("\n[OK] All SEC-06/07/08 tests passed!")
