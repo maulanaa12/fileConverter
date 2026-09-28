@@ -1,0 +1,915 @@
+{
+  "count": 312,
+  "gaps": [
+    9145,
+    9423
+  ],
+  "low_edge": [
+    {
+      "name": "IMG-9424.jpeg",
+      "edge": 5.609,
+      "contrast": 26.626,
+      "brightness": 168.152,
+      "bytes": 5765108
+    },
+    {
+      "name": "IMG-9453.jpeg",
+      "edge": 6.071,
+      "contrast": 31.496,
+      "brightness": 154.192,
+      "bytes": 7003788
+    },
+    {
+      "name": "IMG-9281.jpeg",
+      "edge": 6.245,
+      "contrast": 48.403,
+      "brightness": 160.544,
+      "bytes": 6398976
+    },
+    {
+      "name": "IMG-9435.jpeg",
+      "edge": 6.27,
+      "contrast": 26.879,
+      "brightness": 156.767,
+      "bytes": 7722447
+    },
+    {
+      "name": "IMG-9441.jpeg",
+      "edge": 6.377,
+      "contrast": 25.057,
+      "brightness": 161.466,
+      "bytes": 7640517
+    },
+    {
+      "name": "IMG-9432.jpeg",
+      "edge": 6.471,
+      "contrast": 24.851,
+      "brightness": 160.765,
+      "bytes": 7716563
+    },
+    {
+      "name": "IMG-9448.jpeg",
+      "edge": 6.503,
+      "contrast": 26.408,
+      "brightness": 149.488,
+      "bytes": 6706988
+    },
+    {
+      "name": "IMG-9402.jpeg",
+      "edge": 6.528,
+      "contrast": 30.736,
+      "brightness": 161.135,
+      "bytes": 7537656
+    },
+    {
+      "name": "IMG-9438.jpeg",
+      "edge": 6.542,
+      "contrast": 26.126,
+      "brightness": 159.95,
+      "bytes": 7609996
+    },
+    {
+      "name": "IMG-9429.jpeg",
+      "edge": 6.619,
+      "contrast": 24.116,
+      "brightness": 165.573,
+      "bytes": 7384491
+    },
+    {
+      "name": "IMG-9444.jpeg",
+      "edge": 6.728,
+      "contrast": 28.342,
+      "brightness": 162.262,
+      "bytes": 7691120
+    },
+    {
+      "name": "IMG-9450.jpeg",
+      "edge": 6.77,
+      "contrast": 29.718,
+      "brightness": 158.162,
+      "bytes": 7697286
+    },
+    {
+      "name": "IMG-9201.jpeg",
+      "edge": 6.792,
+      "contrast": 20.2,
+      "brightness": 177.755,
+      "bytes": 7578792
+    },
+    {
+      "name": "IMG-9423.jpeg",
+      "edge": 6.844,
+      "contrast": 31.651,
+      "brightness": 157.62,
+      "bytes": 6775439
+    },
+    {
+      "name": "IMG-9451.jpeg",
+      "edge": 6.871,
+      "contrast": 29.781,
+      "brightness": 144.044,
+      "bytes": 7554160
+    },
+    {
+      "name": "IMG-9403.jpeg",
+      "edge": 6.909,
+      "contrast": 32.417,
+      "brightness": 151.027,
+      "bytes": 7043586
+    },
+    {
+      "name": "IMG-9433.jpeg",
+      "edge": 6.944,
+      "contrast": 29.735,
+      "brightness": 154.644,
+      "bytes": 8310704
+    },
+    {
+      "name": "IMG-9456.jpeg",
+      "edge": 6.993,
+      "contrast": 29.68,
+      "brightness": 167.185,
+      "bytes": 7269154
+    },
+    {
+      "name": "IMG-9204.jpeg",
+      "edge": 7.005,
+      "contrast": 22.336,
+      "brightness": 181.256,
+      "bytes": 7657166
+    },
+    {
+      "name": "IMG-9427.jpeg",
+      "edge": 7.112,
+      "contrast": 34.677,
+      "brightness": 100.909,
+      "bytes": 8009237
+    },
+    {
+      "name": "IMG-9364.jpeg",
+      "edge": 7.119,
+      "contrast": 26.413,
+      "brightness": 185.31,
+      "bytes": 8233362
+    },
+    {
+      "name": "IMG-9415.jpeg",
+      "edge": 7.142,
+      "contrast": 31.384,
+      "brightness": 158.821,
+      "bytes": 7626039
+    },
+    {
+      "name": "IMG-9447.jpeg",
+      "edge": 7.18,
+      "contrast": 32.034,
+      "brightness": 160.395,
+      "bytes": 7514609
+    },
+    {
+      "name": "IMG-9408.jpeg",
+      "edge": 7.239,
+      "contrast": 35.187,
+      "brightness": 160.445,
+      "bytes": 7517671
+    },
+    {
+      "name": "IMG-9405.jpeg",
+      "edge": 7.335,
+      "contrast": 30.891,
+      "brightness": 154.322,
+      "bytes": 7537071
+    },
+    {
+      "name": "IMG-9226.jpeg",
+      "edge": 7.349,
+      "contrast": 20.924,
+      "brightness": 177.959,
+      "bytes": 8158952
+    },
+    {
+      "name": "IMG-9400.jpeg",
+      "edge": 7.364,
+      "contrast": 34.511,
+      "brightness": 147.32,
+      "bytes": 7357315
+    },
+    {
+      "name": "IMG-9442.jpeg",
+      "edge": 7.365,
+      "contrast": 32.836,
+      "brightness": 145.882,
+      "bytes": 7640776
+    },
+    {
+      "name": "IMG-9418.jpeg",
+      "edge": 7.374,
+      "contrast": 31.645,
+      "brightness": 157.359,
+      "bytes": 7653792
+    },
+    {
+      "name": "IMG-9445.jpeg",
+      "edge": 7.427,
+      "contrast": 33.062,
+      "brightness": 147.554,
+      "bytes": 7192635
+    },
+    {
+      "name": "IMG-9416.jpeg",
+      "edge": 7.429,
+      "contrast": 32.159,
+      "brightness": 151.117,
+      "bytes": 8005573
+    },
+    {
+      "name": "IMG-9425.jpeg",
+      "edge": 7.455,
+      "contrast": 32.312,
+      "brightness": 159.711,
+      "bytes": 7207831
+    },
+    {
+      "name": "IMG-9220.jpeg",
+      "edge": 7.514,
+      "contrast": 23.382,
+      "brightness": 176.35,
+      "bytes": 8501309
+    },
+    {
+      "name": "IMG-9238.jpeg",
+      "edge": 7.585,
+      "contrast": 24.765,
+      "brightness": 180.519,
+      "bytes": 7742525
+    },
+    {
+      "name": "IMG-9243.jpeg",
+      "edge": 7.595,
+      "contrast": 35.084,
+      "brightness": 176.711,
+      "bytes": 6860135
+    },
+    {
+      "name": "IMG-9439.jpeg",
+      "edge": 7.597,
+      "contrast": 32.475,
+      "brightness": 145.536,
+      "bytes": 8100705
+    },
+    {
+      "name": "IMG-9454.jpeg",
+      "edge": 7.605,
+      "contrast": 34.589,
+      "brightness": 148.048,
+      "bytes": 8489147
+    },
+    {
+      "name": "IMG-9430.jpeg",
+      "edge": 7.619,
+      "contrast": 34.846,
+      "brightness": 142.277,
+      "bytes": 7289449
+    },
+    {
+      "name": "IMG-9406.jpeg",
+      "edge": 7.636,
+      "contrast": 38.063,
+      "brightness": 148.991,
+      "bytes": 7264072
+    },
+    {
+      "name": "IMG-9232.jpeg",
+      "edge": 7.666,
+      "contrast": 25.008,
+      "brightness": 180.255,
+      "bytes": 8052854
+    }
+  ],
+  "low_contrast": [
+    {
+      "name": "IMG-9201.jpeg",
+      "edge": 6.792,
+      "contrast": 20.2,
+      "brightness": 177.755,
+      "bytes": 7578792
+    },
+    {
+      "name": "IMG-9449.jpeg",
+      "edge": 7.669,
+      "contrast": 20.598,
+      "brightness": 166.351,
+      "bytes": 8806751
+    },
+    {
+      "name": "IMG-9226.jpeg",
+      "edge": 7.349,
+      "contrast": 20.924,
+      "brightness": 177.959,
+      "bytes": 8158952
+    },
+    {
+      "name": "IMG-9204.jpeg",
+      "edge": 7.005,
+      "contrast": 22.336,
+      "brightness": 181.256,
+      "bytes": 7657166
+    },
+    {
+      "name": "IMG-9440.jpeg",
+      "edge": 8.484,
+      "contrast": 22.415,
+      "brightness": 164.546,
+      "bytes": 8671790
+    },
+    {
+      "name": "IMG-9220.jpeg",
+      "edge": 7.514,
+      "contrast": 23.382,
+      "brightness": 176.35,
+      "bytes": 8501309
+    },
+    {
+      "name": "IMG-9443.jpeg",
+      "edge": 8.869,
+      "contrast": 23.842,
+      "brightness": 164.01,
+      "bytes": 9656068
+    },
+    {
+      "name": "IMG-9229.jpeg",
+      "edge": 7.762,
+      "contrast": 23.94,
+      "brightness": 175.513,
+      "bytes": 8045629
+    },
+    {
+      "name": "IMG-9222.jpeg",
+      "edge": 11.389,
+      "contrast": 24.036,
+      "brightness": 179.269,
+      "bytes": 10517259
+    },
+    {
+      "name": "IMG-9429.jpeg",
+      "edge": 6.619,
+      "contrast": 24.116,
+      "brightness": 165.573,
+      "bytes": 7384491
+    },
+    {
+      "name": "IMG-9452.jpeg",
+      "edge": 8.553,
+      "contrast": 24.139,
+      "brightness": 163.754,
+      "bytes": 8662619
+    },
+    {
+      "name": "IMG-9223.jpeg",
+      "edge": 8.015,
+      "contrast": 24.238,
+      "brightness": 182.397,
+      "bytes": 8540431
+    },
+    {
+      "name": "IMG-9207.jpeg",
+      "edge": 8.247,
+      "contrast": 24.762,
+      "brightness": 177.594,
+      "bytes": 7756283
+    },
+    {
+      "name": "IMG-9238.jpeg",
+      "edge": 7.585,
+      "contrast": 24.765,
+      "brightness": 180.519,
+      "bytes": 7742525
+    },
+    {
+      "name": "IMG-9432.jpeg",
+      "edge": 6.471,
+      "contrast": 24.851,
+      "brightness": 160.765,
+      "bytes": 7716563
+    },
+    {
+      "name": "IMG-9232.jpeg",
+      "edge": 7.666,
+      "contrast": 25.008,
+      "brightness": 180.255,
+      "bytes": 8052854
+    },
+    {
+      "name": "IMG-9441.jpeg",
+      "edge": 6.377,
+      "contrast": 25.057,
+      "brightness": 161.466,
+      "bytes": 7640517
+    },
+    {
+      "name": "IMG-9192.jpeg",
+      "edge": 8.093,
+      "contrast": 25.526,
+      "brightness": 176.349,
+      "bytes": 7931968
+    },
+    {
+      "name": "IMG-9438.jpeg",
+      "edge": 6.542,
+      "contrast": 26.126,
+      "brightness": 159.95,
+      "bytes": 7609996
+    },
+    {
+      "name": "IMG-9448.jpeg",
+      "edge": 6.503,
+      "contrast": 26.408,
+      "brightness": 149.488,
+      "bytes": 6706988
+    },
+    {
+      "name": "IMG-9364.jpeg",
+      "edge": 7.119,
+      "contrast": 26.413,
+      "brightness": 185.31,
+      "bytes": 8233362
+    },
+    {
+      "name": "IMG-9434.jpeg",
+      "edge": 9.682,
+      "contrast": 26.572,
+      "brightness": 163.073,
+      "bytes": 9762718
+    },
+    {
+      "name": "IMG-9164.jpeg",
+      "edge": 8.156,
+      "contrast": 26.59,
+      "brightness": 172.761,
+      "bytes": 8025042
+    },
+    {
+      "name": "IMG-9446.jpeg",
+      "edge": 9.345,
+      "contrast": 26.608,
+      "brightness": 162.239,
+      "bytes": 9025970
+    },
+    {
+      "name": "IMG-9424.jpeg",
+      "edge": 5.609,
+      "contrast": 26.626,
+      "brightness": 168.152,
+      "bytes": 5765108
+    },
+    {
+      "name": "IMG-9435.jpeg",
+      "edge": 6.27,
+      "contrast": 26.879,
+      "brightness": 156.767,
+      "bytes": 7722447
+    },
+    {
+      "name": "IMG-9153.jpeg",
+      "edge": 10.911,
+      "contrast": 27.447,
+      "brightness": 182.456,
+      "bytes": 10426794
+    },
+    {
+      "name": "IMG-9195.jpeg",
+      "edge": 8.481,
+      "contrast": 27.497,
+      "brightness": 174.505,
+      "bytes": 7886936
+    },
+    {
+      "name": "IMG-9157.jpeg",
+      "edge": 8.22,
+      "contrast": 28.255,
+      "brightness": 187.801,
+      "bytes": 8064552
+    },
+    {
+      "name": "IMG-9455.jpeg",
+      "edge": 9.861,
+      "contrast": 28.269,
+      "brightness": 159.003,
+      "bytes": 9417544
+    }
+  ],
+  "smallest": [
+    {
+      "name": "IMG-9426.jpeg",
+      "edge": 10.049,
+      "contrast": 43.911,
+      "brightness": 118.477,
+      "bytes": 4341813
+    },
+    {
+      "name": "IMG-9395.jpeg",
+      "edge": 8.19,
+      "contrast": 46.925,
+      "brightness": 148.295,
+      "bytes": 5573713
+    },
+    {
+      "name": "IMG-9424.jpeg",
+      "edge": 5.609,
+      "contrast": 26.626,
+      "brightness": 168.152,
+      "bytes": 5765108
+    },
+    {
+      "name": "IMG-9281.jpeg",
+      "edge": 6.245,
+      "contrast": 48.403,
+      "brightness": 160.544,
+      "bytes": 6398976
+    },
+    {
+      "name": "IMG-9448.jpeg",
+      "edge": 6.503,
+      "contrast": 26.408,
+      "brightness": 149.488,
+      "bytes": 6706988
+    },
+    {
+      "name": "IMG-9423.jpeg",
+      "edge": 6.844,
+      "contrast": 31.651,
+      "brightness": 157.62,
+      "bytes": 6775439
+    },
+    {
+      "name": "IMG-9289.jpeg",
+      "edge": 8.659,
+      "contrast": 45.446,
+      "brightness": 155.752,
+      "bytes": 6812123
+    },
+    {
+      "name": "IMG-9396.jpeg",
+      "edge": 8.447,
+      "contrast": 41.038,
+      "brightness": 143.746,
+      "bytes": 6834783
+    },
+    {
+      "name": "IMG-9243.jpeg",
+      "edge": 7.595,
+      "contrast": 35.084,
+      "brightness": 176.711,
+      "bytes": 6860135
+    },
+    {
+      "name": "IMG-9377.jpeg",
+      "edge": 8.016,
+      "contrast": 40.367,
+      "brightness": 139.7,
+      "bytes": 6899315
+    },
+    {
+      "name": "IMG-9386.jpeg",
+      "edge": 8.434,
+      "contrast": 39.005,
+      "brightness": 139.75,
+      "bytes": 6957384
+    },
+    {
+      "name": "IMG-9380.jpeg",
+      "edge": 8.999,
+      "contrast": 39.369,
+      "brightness": 135.317,
+      "bytes": 6972256
+    },
+    {
+      "name": "IMG-9453.jpeg",
+      "edge": 6.071,
+      "contrast": 31.496,
+      "brightness": 154.192,
+      "bytes": 7003788
+    },
+    {
+      "name": "IMG-9392.jpeg",
+      "edge": 9.295,
+      "contrast": 42.001,
+      "brightness": 140.492,
+      "bytes": 7024349
+    },
+    {
+      "name": "IMG-9403.jpeg",
+      "edge": 6.909,
+      "contrast": 32.417,
+      "brightness": 151.027,
+      "bytes": 7043586
+    },
+    {
+      "name": "IMG-9389.jpeg",
+      "edge": 8.275,
+      "contrast": 37.925,
+      "brightness": 140.26,
+      "bytes": 7051867
+    },
+    {
+      "name": "IMG-9383.jpeg",
+      "edge": 9.282,
+      "contrast": 39.88,
+      "brightness": 138.877,
+      "bytes": 7086800
+    },
+    {
+      "name": "IMG-9419.jpeg",
+      "edge": 8.449,
+      "contrast": 36.721,
+      "brightness": 144.514,
+      "bytes": 7123398
+    },
+    {
+      "name": "IMG-9385.jpeg",
+      "edge": 8.121,
+      "contrast": 36.059,
+      "brightness": 148.016,
+      "bytes": 7154518
+    },
+    {
+      "name": "IMG-9394.jpeg",
+      "edge": 8.209,
+      "contrast": 37.255,
+      "brightness": 153.323,
+      "bytes": 7167690
+    },
+    {
+      "name": "IMG-9391.jpeg",
+      "edge": 8.041,
+      "contrast": 36.751,
+      "brightness": 152.413,
+      "bytes": 7176508
+    },
+    {
+      "name": "IMG-9334.jpeg",
+      "edge": 9.265,
+      "contrast": 42.725,
+      "brightness": 158.235,
+      "bytes": 7187819
+    },
+    {
+      "name": "IMG-9445.jpeg",
+      "edge": 7.427,
+      "contrast": 33.062,
+      "brightness": 147.554,
+      "bytes": 7192635
+    },
+    {
+      "name": "IMG-9351.jpeg",
+      "edge": 9.577,
+      "contrast": 33.511,
+      "brightness": 173.055,
+      "bytes": 7202508
+    },
+    {
+      "name": "IMG-9425.jpeg",
+      "edge": 7.455,
+      "contrast": 32.312,
+      "brightness": 159.711,
+      "bytes": 7207831
+    },
+    {
+      "name": "IMG-9406.jpeg",
+      "edge": 7.636,
+      "contrast": 38.063,
+      "brightness": 148.991,
+      "bytes": 7264072
+    },
+    {
+      "name": "IMG-9456.jpeg",
+      "edge": 6.993,
+      "contrast": 29.68,
+      "brightness": 167.185,
+      "bytes": 7269154
+    },
+    {
+      "name": "IMG-9379.jpeg",
+      "edge": 8.578,
+      "contrast": 36.493,
+      "brightness": 147.562,
+      "bytes": 7279307
+    },
+    {
+      "name": "IMG-9374.jpeg",
+      "edge": 9.32,
+      "contrast": 52.521,
+      "brightness": 153.08,
+      "bytes": 7288375
+    },
+    {
+      "name": "IMG-9430.jpeg",
+      "edge": 7.619,
+      "contrast": 34.846,
+      "brightness": 142.277,
+      "bytes": 7289449
+    }
+  ],
+  "similar_adjacent": [
+    {
+      "left": "IMG-9266.jpeg",
+      "right": "IMG-9267.jpeg",
+      "difference": 8.503
+    },
+    {
+      "left": "IMG-9294.jpeg",
+      "right": "IMG-9295.jpeg",
+      "difference": 8.556
+    },
+    {
+      "left": "IMG-9281.jpeg",
+      "right": "IMG-9282.jpeg",
+      "difference": 9.197
+    },
+    {
+      "left": "IMG-9305.jpeg",
+      "right": "IMG-9306.jpeg",
+      "difference": 9.938
+    },
+    {
+      "left": "IMG-9353.jpeg",
+      "right": "IMG-9354.jpeg",
+      "difference": 10.234
+    },
+    {
+      "left": "IMG-9401.jpeg",
+      "right": "IMG-9402.jpeg",
+      "difference": 10.28
+    },
+    {
+      "left": "IMG-9291.jpeg",
+      "right": "IMG-9292.jpeg",
+      "difference": 10.383
+    },
+    {
+      "left": "IMG-9295.jpeg",
+      "right": "IMG-9296.jpeg",
+      "difference": 10.396
+    },
+    {
+      "left": "IMG-9277.jpeg",
+      "right": "IMG-9278.jpeg",
+      "difference": 10.471
+    },
+    {
+      "left": "IMG-9407.jpeg",
+      "right": "IMG-9408.jpeg",
+      "difference": 10.596
+    },
+    {
+      "left": "IMG-9160.jpeg",
+      "right": "IMG-9161.jpeg",
+      "difference": 10.602
+    },
+    {
+      "left": "IMG-9455.jpeg",
+      "right": "IMG-9456.jpeg",
+      "difference": 10.744
+    },
+    {
+      "left": "IMG-9188.jpeg",
+      "right": "IMG-9189.jpeg",
+      "difference": 10.873
+    },
+    {
+      "left": "IMG-9212.jpeg",
+      "right": "IMG-9213.jpeg",
+      "difference": 10.994
+    },
+    {
+      "left": "IMG-9424.jpeg",
+      "right": "IMG-9425.jpeg",
+      "difference": 11.154
+    },
+    {
+      "left": "IMG-9166.jpeg",
+      "right": "IMG-9167.jpeg",
+      "difference": 11.196
+    },
+    {
+      "left": "IMG-9390.jpeg",
+      "right": "IMG-9391.jpeg",
+      "difference": 11.209
+    },
+    {
+      "left": "IMG-9184.jpeg",
+      "right": "IMG-9185.jpeg",
+      "difference": 11.22
+    },
+    {
+      "left": "IMG-9150.jpeg",
+      "right": "IMG-9151.jpeg",
+      "difference": 11.274
+    },
+    {
+      "left": "IMG-9311.jpeg",
+      "right": "IMG-9312.jpeg",
+      "difference": 11.281
+    },
+    {
+      "left": "IMG-9341.jpeg",
+      "right": "IMG-9342.jpeg",
+      "difference": 11.426
+    },
+    {
+      "left": "IMG-9175.jpeg",
+      "right": "IMG-9176.jpeg",
+      "difference": 11.466
+    },
+    {
+      "left": "IMG-9181.jpeg",
+      "right": "IMG-9182.jpeg",
+      "difference": 11.526
+    },
+    {
+      "left": "IMG-9153.jpeg",
+      "right": "IMG-9154.jpeg",
+      "difference": 11.659
+    },
+    {
+      "left": "IMG-9443.jpeg",
+      "right": "IMG-9444.jpeg",
+      "difference": 11.729
+    },
+    {
+      "left": "IMG-9197.jpeg",
+      "right": "IMG-9198.jpeg",
+      "difference": 11.742
+    },
+    {
+      "left": "IMG-9178.jpeg",
+      "right": "IMG-9179.jpeg",
+      "difference": 11.831
+    },
+    {
+      "left": "IMG-9381.jpeg",
+      "right": "IMG-9382.jpeg",
+      "difference": 11.864
+    },
+    {
+      "left": "IMG-9172.jpeg",
+      "right": "IMG-9173.jpeg",
+      "difference": 11.866
+    },
+    {
+      "left": "IMG-9222.jpeg",
+      "right": "IMG-9223.jpeg",
+      "difference": 11.888
+    },
+    {
+      "left": "IMG-9437.jpeg",
+      "right": "IMG-9438.jpeg",
+      "difference": 11.965
+    },
+    {
+      "left": "IMG-9329.jpeg",
+      "right": "IMG-9330.jpeg",
+      "difference": 11.992
+    },
+    {
+      "left": "IMG-9393.jpeg",
+      "right": "IMG-9394.jpeg",
+      "difference": 12.067
+    },
+    {
+      "left": "IMG-9335.jpeg",
+      "right": "IMG-9336.jpeg",
+      "difference": 12.264
+    },
+    {
+      "left": "IMG-9274.jpeg",
+      "right": "IMG-9275.jpeg",
+      "difference": 12.319
+    },
+    {
+      "left": "IMG-9317.jpeg",
+      "right": "IMG-9318.jpeg",
+      "difference": 12.656
+    },
+    {
+      "left": "IMG-9263.jpeg",
+      "right": "IMG-9264.jpeg",
+      "difference": 12.702
+    },
+    {
+      "left": "IMG-9326.jpeg",
+      "right": "IMG-9327.jpeg",
+      "difference": 12.753
+    },
+    {
+      "left": "IMG-9446.jpeg",
+      "right": "IMG-9447.jpeg",
+      "difference": 12.768
+    },
+    {
+      "left": "IMG-9440.jpeg",
+      "right": "IMG-9441.jpeg",
+      "difference": 12.874
+    }
+  ]
+}

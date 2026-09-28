@@ -8,8 +8,8 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
             <div class="flex items-center gap-2">
-                <a href="/" class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Batch Rename & Shift Tool</h1>
+                <a href="/" aria-label="Kembali ke beranda" class="back-link text-muted"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Batch Rename</h1>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Ganti nama massal file PDF, atur nomor urut terpadu, atau geser indeks nomor file hasil scan dengan tabel preview & fitur Undo.</p>
         </div>
@@ -37,7 +37,7 @@
 
                 <!-- Rule Selector -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-700 dark:text-slate-200">Tipe Aturan Rename</label>
+                    <label for="rule-type" class="text-xs font-bold text-slate-700 dark:text-slate-200">Tipe Aturan Rename</label>
                     <select id="rule-type" onchange="updateRuleUI()" class="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:ring-brand-500 dark:focus:border-brand-500">
                         <option value="shift" selected>🔢 Geser Nomor (Shift Offset +/-)</option>
                         <option value="sequence">📋 Nomor Urut Baru (Sequential Numbering)</option>
@@ -52,17 +52,17 @@
                         <i data-lucide="calculator" class="w-4 h-4"></i> Pengaturan Pergeseran Nomor:
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Nilai Geser (Offset)</label>
+                        <label for="shift-offset" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Nilai Geser (Offset)</label>
                         <input type="number" id="shift-offset" value="-1" oninput="updateLivePreview()" class="w-full mt-1 px-3 py-2 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg font-mono">
-                        <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">Contoh: <code>-1</code> mengubah <code>53.pdf</code> jadi <code>52.pdf</code>. <code>+2</code> mengubah <code>10.pdf</code> jadi <code>12.pdf</code>.</span>
+                        <span class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 block">Nilai <code>-1</code> mengubah <code>53.pdf</code> menjadi <code>52.pdf</code>.</span>
                     </div>
                     <div class="grid grid-cols-2 gap-2 pt-1">
                         <div>
-                            <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Filter Min Nomor</label>
+                            <label for="shift-min" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Filter Min Nomor</label>
                             <input type="number" id="shift-min" placeholder="Semua" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg">
                         </div>
                         <div>
-                            <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Digit Padding</label>
+                            <label for="shift-pad" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Digit Padding</label>
                             <input type="number" id="shift-pad" value="0" min="0" max="6" oninput="updateLivePreview()" placeholder="0 (otomatis)" class="w-full mt-1 px-2.5 py-1.5 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg">
                         </div>
                     </div>
@@ -75,16 +75,16 @@
                     </div>
                     <!-- Arah Urutan -->
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200 mb-1 block">Arah Penomoran</label>
-                        <div class="grid grid-cols-2 gap-1.5">
+                        <span id="seq-direction-label" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200 mb-1 block">Arah Penomoran</span>
+                        <div role="radiogroup" aria-labelledby="seq-direction-label" class="grid grid-cols-2 gap-1.5">
                             <label class="cursor-pointer">
-                                <input type="radio" name="seq-direction" value="asc" checked class="peer hidden" onchange="updateLivePreview()">
+                                <input type="radio" name="seq-direction" value="asc" checked class="peer control-radio" onchange="updateLivePreview()">
                                 <div class="py-1.5 px-2 text-center text-xs font-bold rounded-lg border border-purple-200 bg-white dark:bg-slate-800 dark:border-purple-500/30 text-purple-900 dark:text-purple-300 peer-checked:bg-purple-200 dark:peer-checked:bg-purple-900/50 peer-checked:text-purple-900 dark:peer-checked:text-purple-200 peer-checked:border-purple-400 flex items-center justify-center gap-1 transition-all">
                                     <i data-lucide="arrow-up" class="w-3.5 h-3.5 text-purple-700 dark:text-purple-400"></i> Naik (+Step)
                                 </div>
                             </label>
                             <label class="cursor-pointer">
-                                <input type="radio" name="seq-direction" value="desc" class="peer hidden" onchange="updateLivePreview()">
+                                <input type="radio" name="seq-direction" value="desc" class="peer control-radio" onchange="updateLivePreview()">
                                 <div class="py-1.5 px-2 text-center text-xs font-bold rounded-lg border border-purple-200 bg-white dark:bg-slate-800 dark:border-purple-500/30 text-purple-900 dark:text-purple-300 peer-checked:bg-purple-200 dark:peer-checked:bg-purple-900/50 peer-checked:text-purple-900 dark:peer-checked:text-purple-200 peer-checked:border-purple-400 flex items-center justify-center gap-1 transition-all">
                                     <i data-lucide="arrow-down" class="w-3.5 h-3.5 text-purple-700 dark:text-purple-400"></i> Turun (-Step)
                                 </div>
@@ -93,28 +93,29 @@
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Nomor Mulai</label>
+                            <label for="seq-start" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Nomor Mulai</label>
                             <input type="number" id="seq-start" value="1" min="0" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg">
                         </div>
                         <div>
-                            <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Step (Lompatan)</label>
+                            <label for="seq-step" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Step (Lompatan)</label>
                             <input type="number" id="seq-step" value="1" min="1" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg">
                         </div>
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Digit Padding (Contoh: 3 -> 001)</label>
+                        <label for="seq-pad" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Jumlah digit nomor</label>
                         <input type="number" id="seq-pad" value="3" min="0" max="6" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg">
+                        <span class="text-[10px] text-muted block mt-0.5">3 digit menghasilkan 001, 002, dan seterusnya.</span>
                     </div>
                 </div>
 
                 <!-- RULE 3: FIND & REPLACE -->
                 <div id="rule-replace-box" class="hidden space-y-3 p-3.5 bg-brand-50/60 dark:bg-brand-500/10 rounded-xl border border-brand-200 dark:border-brand-500/30 text-xs">
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Cari Teks (Find)</label>
+                        <label for="find-text" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Cari Teks (Find)</label>
                         <input type="text" id="find-text" placeholder="Teks yang ingin diganti" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg">
                     </div>
                     <div>
-                        <label class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Ganti Dengan (Replace)</label>
+                        <label for="replace-text" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Ganti Dengan (Replace)</label>
                         <input type="text" id="replace-text" placeholder="Teks pengganti" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-white border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 rounded-lg">
                     </div>
                     <label class="flex items-center gap-2 text-[11px] text-slate-700 dark:text-slate-200 cursor-pointer">
@@ -127,17 +128,17 @@
                 <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Awalan (Prefix)</label>
+                            <label for="common-prefix" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Awalan (Prefix)</label>
                             <input type="text" id="common-prefix" placeholder="Opsional" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100">
                         </div>
                         <div>
-                            <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Akhiran (Suffix)</label>
+                            <label for="common-suffix" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Akhiran (Suffix)</label>
                             <input type="text" id="common-suffix" placeholder="Opsional" oninput="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100">
                         </div>
                     </div>
 
                     <div>
-                        <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Ubah Huruf Kapital</label>
+                        <label for="case-transform" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Ubah Huruf Kapital</label>
                         <select id="case-transform" onchange="updateLivePreview()" class="w-full mt-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100">
                             <option value="none">Tidak Diubah</option>
                             <option value="upper">UPPERCASE (HURUF BESAR SEMUA)</option>
@@ -181,20 +182,20 @@
                     </div>
                     <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">Tarik file atau klik untuk unggah</h4>
                     <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Mendukung PDF, JPG, PNG massal</p>
+                    <button type="button" class="mt-4 px-4 bg-brand-500 text-white font-semibold rounded-xl">Pilih File</button>
                 </div>
             </div>
 
             <!-- SECTION 2: LOCAL FOLDER MODE SOURCE -->
             <div id="source-local-container" class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <i data-lucide="hard-drive" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Path Folder di Komputer / Harddisk
+                    <label for="local-folder-path" class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <i data-lucide="hard-drive" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Folder berkas
                     </label>
-                    <span class="text-[11px] text-slate-500 dark:text-slate-400">File diproses langsung di disk tanpa upload</span>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <div class="relative flex-1">
-                        <input type="text" id="local-folder-path" placeholder="Pilih folder atau tempel path (Contoh: D:\magang\berkas)" class="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none font-mono dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:ring-brand-500 dark:focus:border-brand-500">
+                        <input type="text" id="local-folder-path" placeholder="Masukkan lokasi folder" aria-describedby="rename-folder-hint" class="w-full pl-9 pr-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-brand-500 focus:outline-none font-mono dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100 dark:focus:ring-brand-500 dark:focus:border-brand-500">
                         <i data-lucide="folder" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
                     </div>
                     <button id="btn-scan-rename" type="button" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-sm dark:bg-brand-500 dark:hover:bg-brand-600 cursor-pointer whitespace-nowrap">
@@ -202,7 +203,7 @@
                         <span>Pilih Folder</span>
                     </button>
                 </div>
-                <p class="text-[11px] text-slate-500 dark:text-slate-400">Klik <strong>Pilih Folder</strong> untuk memilih dari File Explorer, atau tempel path folder Anda.</p>
+                <p id="rename-folder-hint" class="text-xs text-muted">Folder harus berada di komputer yang menjalankan aplikasi.</p>
             </div>
 
             <!-- LIVE PREVIEW TABLE -->
@@ -214,7 +215,7 @@
                         <span id="preview-badge-count" class="text-xs px-2 py-0.5 bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-300 font-bold rounded-full">0 file</span>
                     </div>
                     <div class="flex items-center gap-3 text-xs">
-                        <div class="text-slate-400 dark:text-slate-500">
+                        <div class="text-muted">
                             <span id="preview-changed-count" class="font-semibold text-emerald-600 dark:text-emerald-400">0</span> nama berubah
                         </div>
                         <!-- Grup Pengurutan Cepat -->
@@ -245,7 +246,7 @@
                         </thead>
                         <tbody id="preview-tbody" class="divide-y divide-slate-100 dark:divide-slate-800">
                             <tr>
-                                <td colspan="5" class="py-12 text-center text-slate-400 dark:text-slate-500">
+                                <td colspan="5" class="py-12 text-center text-muted">
                                     <i data-lucide="file-search" class="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2"></i>
                                     Belum ada file yang dimuat. Silakan upload file atau pindai folder.
                                 </td>
@@ -344,7 +345,7 @@
     async function scanLocalFolder() {
         const pathInput = document.getElementById('local-folder-path').value.trim();
         if (!pathInput) {
-            showToast('Harap masukkan path folder.', 'warning');
+            showToast('Pilih folder berkas terlebih dahulu.', 'warning');
             return;
         }
 
@@ -420,7 +421,7 @@
             document.getElementById('preview-changed-count').innerText = '0';
             document.getElementById('preview-tbody').innerHTML = `
                 <tr>
-                    <td colspan="5" class="py-12 text-center text-slate-400 dark:text-slate-500">
+                    <td colspan="5" class="py-12 text-center text-muted">
                         <i data-lucide="file-search" class="w-8 h-8 mx-auto text-slate-300 dark:text-slate-600 mb-2"></i>
                         Belum ada file yang dimuat. Silakan upload file atau pindai folder.
                     </td>
@@ -469,7 +470,7 @@
             }
 
             tr.innerHTML = `
-                <td class="py-2.5 px-4 text-center font-bold text-slate-400 dark:text-slate-500">${idx + 1}</td>
+                <td class="py-2.5 px-4 text-center font-bold text-muted">${idx + 1}</td>
                 <td class="py-2.5 px-4 font-medium text-slate-700 dark:text-slate-200 truncate max-w-[200px]" title="${item.original_name}">${item.original_name}</td>
                 <td class="py-2.5 px-4 text-center text-slate-300 dark:text-slate-600">
                     <i data-lucide="arrow-right" class="w-3.5 h-3.5 inline"></i>
@@ -528,7 +529,7 @@
     async function executeRenameLocal() {
         const folderPath = document.getElementById('local-folder-path').value.trim();
         if (!folderPath) {
-            showToast('Harap masukkan path folder lokal.', 'warning');
+            showToast('Pilih folder berkas terlebih dahulu.', 'warning');
             return;
         }
 
@@ -574,7 +575,7 @@
     async function executeUndoLocal() {
         const folderPath = document.getElementById('local-folder-path').value.trim();
         if (!folderPath) {
-            showToast('Harap masukkan path folder lokal.', 'warning');
+            showToast('Pilih folder berkas terlebih dahulu.', 'warning');
             return;
         }
 

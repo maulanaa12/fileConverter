@@ -8,7 +8,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
             <div class="flex items-center gap-2">
-                <a href="/" class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                <a href="/" aria-label="Kembali ke beranda" class="back-link text-muted"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Organize PDF Pages</h1>
             </div>
             <p class="text-sm text-slate-500 mt-1 dark:text-slate-400">Susun ulang posisi halaman PDF dengan drag-and-drop, putar rotasi halaman, atau hapus halaman yang tidak perlu.</p>
@@ -34,7 +34,7 @@
                 <i data-lucide="layout-grid" class="w-10 h-10"></i>
             </div>
             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Pilih 1 file PDF</h3>
-            <p class="text-sm text-slate-500 mt-1 max-w-md dark:text-slate-400">Tarik file PDF ke sini untuk menyusun halaman-halamannya</p>
+            <p class="text-sm text-slate-500 mt-1 max-w-md dark:text-slate-400">Atau tarik dan letakkan file PDF di sini.</p>
             <button type="button" class="mt-6 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 dark:shadow-none transition-all transform active:scale-95 flex items-center gap-2">
                 <i data-lucide="folder-open" class="w-5 h-5"></i>
                 Pilih File PDF
@@ -49,13 +49,13 @@
         <div class="lg:col-span-3 space-y-4">
             <div class="flex items-center justify-between bg-slate-100/80 dark:bg-slate-800/60 px-4 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400">
                 <span class="flex items-center gap-1.5">
-                    <i data-lucide="move" class="w-4 h-4 text-slate-400 dark:text-slate-500"></i> Geser kartu halaman untuk mengubah urutan dokumen
+                    <i data-lucide="move" class="w-4 h-4 text-muted"></i> Geser kartu atau gunakan tombol Naik dan Turun
                 </span>
                 <span id="page-count-badge" class="font-bold text-brand-700 dark:text-brand-300">0 Halaman Aktif</span>
             </div>
 
             <!-- Sortable Pages Grid -->
-            <div id="pages-sortable-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[300px]"></div>
+            <div id="pages-sortable-grid" class="file-card-grid grid gap-4 min-h-[300px]"></div>
         </div>
 
         <!-- Right: Action Panel -->
@@ -66,23 +66,23 @@
                 </h3>
 
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-700 dark:text-slate-200">Nama File Hasil</label>
+                    <label for="output-filename" class="text-xs font-bold text-slate-700 dark:text-slate-200">Nama File Hasil</label>
                     <input type="text" id="output-filename" value="organized_document.pdf" class="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none dark:focus:ring-brand-500 dark:focus:border-brand-500">
                 </div>
 
                 <!-- Custom Output Folder (Optional) -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
-                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Simpan Langsung ke Folder (Opsional)
+                    <label for="custom-output-dir" class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Folder penyimpanan (opsional)
                     </label>
                     <div class="flex gap-1.5">
-                        <input type="text" id="custom-output-dir" placeholder="Contoh: D:\hasil_organize atau ./file" class="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none dark:focus:ring-brand-500 dark:focus:border-brand-500 font-mono">
+                        <input type="text" id="custom-output-dir" placeholder="Masukkan lokasi folder" class="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl dark:text-slate-100 focus:ring-2 focus:ring-brand-500 focus:outline-none dark:focus:ring-brand-500 dark:focus:border-brand-500 font-mono">
                         <button type="button" onclick="selectCustomOutputDir('custom-output-dir')" title="Pilih folder simpan dari File Explorer" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap">
                             <i data-lucide="folder-search" class="w-3.5 h-3.5"></i>
                             <span>Pilih</span>
                         </button>
                     </div>
-                    <span class="text-[10px] text-slate-400 dark:text-slate-500 block">Kosongkan jika hanya ingin download via browser.</span>
+                    <span class="text-xs text-muted block">Jika kosong, hasil dapat diunduh melalui browser.</span>
                 </div>
 
                 <!-- Save Action Button -->
@@ -179,15 +179,16 @@
             if (!item.deleted) activePages++;
 
             const card = document.createElement('div');
-            card.className = `group relative bg-white dark:bg-slate-900 border ${item.deleted ? 'border-dashed border-rose-400/70 opacity-40 dark:border-rose-500/60 dark:opacity-50' : 'border-slate-200 dark:border-slate-700'} rounded-2xl p-3 shadow-sm flex flex-col justify-between cursor-grab active:cursor-grabbing`;
+            card.className = `group relative bg-white dark:bg-slate-900 border ${item.deleted ? 'border-dashed border-rose-400/70 dark:border-rose-500/60' : 'border-slate-200 dark:border-slate-700'} rounded-2xl p-3 shadow-sm flex flex-col justify-between cursor-grab active:cursor-grabbing`;
             card.dataset.index = index;
 
             card.innerHTML = `
-                <div class="absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-slate-900/80 text-white text-[11px] font-bold flex items-center justify-center shadow">
+                <div class="file-card-toolbar">
+                <div class="w-6 h-6 rounded-full bg-slate-900/80 text-white text-[11px] font-bold flex items-center justify-center shadow">
                     ${index + 1}
                 </div>
 
-                <div class="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-90 group-hover:opacity-100">
+                <div class="file-card-actions">
                     <button onclick="rotatePage(${index})" title="Putar 90°" class="w-7 h-7 rounded-lg bg-white/90 dark:bg-slate-800 shadow text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:text-brand-600 dark:hover:text-brand-400 flex items-center justify-center">
                         <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
                     </button>
@@ -196,8 +197,9 @@
                     </button>
                 </div>
 
+                </div>
                 <div class="my-auto py-2">
-                    <div class="w-full h-36 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-sm transition-transform" style="transform: rotate(${item.rotation}deg)">
+                    <div class="w-full h-36 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-muted font-bold text-sm transition-transform" style="transform: rotate(${item.rotation}deg)">
                         <i data-lucide="file-text" class="w-8 h-8 text-brand-400 mb-1"></i>
                         <span>Hal Asli: ${item.pageNumber}</span>
                     </div>
@@ -210,6 +212,7 @@
                 </div>
             `;
             pagesSortableGrid.appendChild(card);
+            addReorderControls(card, index, pageItems, renderWorkspace, `Halaman asli ${item.pageNumber}`);
         });
 
         document.getElementById('page-count-badge').innerText = `${activePages} Halaman Aktif`;
@@ -217,6 +220,8 @@
 
         if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(pagesSortableGrid, {
+            filter: 'button, input, label',
+            preventOnFilter: false,
             animation: 200,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
@@ -301,7 +306,7 @@
                 savedBox.classList.add('hidden');
             }
 
-            document.getElementById('result-modal').classList.remove('hidden');
+            openResultModal(btn);
             lucide.createIcons();
         } catch (err) {
             console.error(err);
@@ -334,7 +339,7 @@
     }
 
     function resetTool() {
-        document.getElementById('result-modal').classList.add('hidden');
+        closeResultModal();
         currentPdf = null;
         pageItems = [];
         renderWorkspace();

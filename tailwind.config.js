@@ -5,19 +5,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Teal ramp shifted one stop so brand-500 = #0D9488 (primary).
-        // Keeps existing bg-brand-500 / hover:bg-brand-600 classes pixel-correct.
+        // Temporary red palette based on the iLovePDF visual reference.
+        // The action shade is darker than the reference red for readable white labels.
         brand: {
-          50: '#f0fdfa',
-          100: '#ccfbf1',
-          200: '#99f6e4',
-          300: '#5eead4',
-          400: '#14b8a6',
-          500: '#0d9488',
-          600: '#0f766e',
-          700: '#115e59',
-          800: '#134e4a',
-          900: '#042f2e',
+          50: '#fff5f4',
+          100: '#ffe7e5',
+          200: '#ffc6c2',
+          300: '#ffaaa4',
+          400: '#f06560',
+          500: '#d52b27',
+          600: '#c42924',
+          700: '#ab211d',
+          800: '#831d19',
+          900: '#591714',
         },
       },
       fontFamily: {
