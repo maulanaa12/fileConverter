@@ -9,8 +9,8 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
             <div class="flex items-center gap-2">
-                <a href="/" class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Image to PDF Converter</h1>
+                <a href="/" aria-label="Kembali ke beranda" class="back-link text-muted"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Image to PDF</h1>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Pindai folder lokal langsung tanpa upload, pratinjau resolusi tinggi (zoom), susun urutan halaman dengan drag & drop, serta otomatis gabung per N halaman atau jadi 1 file.
@@ -33,14 +33,13 @@
     <!-- 1. Folder Lokal Input Area -->
     <div id="source-local-container" class="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <label class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <i data-lucide="folder" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Masukkan Path Folder Gambar di Komputer / Harddisk:
+            <label for="local-folder-path" class="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <i data-lucide="folder" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Folder gambar
             </label>
-            <span class="text-[11px] text-slate-500 dark:text-slate-400">File diproses langsung di tempat tanpa dipindahkan</span>
         </div>
         <div class="flex flex-col sm:flex-row gap-2">
             <div class="relative flex-1">
-                <input type="text" id="local-folder-path" placeholder="Pilih folder atau tempel path (Contoh: D:\magang\photo\2014-2)" class="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                <input type="text" id="local-folder-path" placeholder="Masukkan lokasi folder" aria-describedby="image-folder-hint" class="w-full pl-9 pr-3 py-2.5 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
                 <i data-lucide="folder" class="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-3 pointer-events-none"></i>
             </div>
             <button id="btn-scan-local" type="button" class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 shadow-md shadow-brand-500/20 dark:shadow-none transition-all cursor-pointer whitespace-nowrap">
@@ -48,6 +47,7 @@
                 <span>Pilih Folder</span>
             </button>
         </div>
+        <p id="image-folder-hint" class="text-xs text-muted">Folder harus berada di komputer yang menjalankan aplikasi.</p>
     </div>
 
     <!-- 2. Upload Dropzone Area (Hidden by default in Local Mode) -->
@@ -59,6 +59,7 @@
             </div>
             <h4 class="text-base font-bold text-slate-800 dark:text-slate-200">Tarik dan letakkan gambar di sini</h4>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">JPG, PNG, WEBP, BMP, TIFF</p>
+            <button type="button" class="mt-4 px-4 bg-brand-500 text-white font-semibold rounded-xl">Pilih Gambar</button>
         </div>
     </div>
 
@@ -99,7 +100,7 @@
 
                 <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400 font-medium">
                     <span class="flex items-center gap-1">
-                        <i data-lucide="move" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400"></i> Geser kartu untuk mengatur urutan halaman
+                        <i data-lucide="move" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400"></i> Geser kartu atau gunakan tombol Naik dan Turun
                     </span>
                     <span class="px-2.5 py-1 bg-brand-50 text-brand-700 font-bold rounded-lg border border-brand-200 dark:bg-brand-500/15 dark:text-brand-300 dark:border-brand-500/30">
                         <strong id="badge-selected-count">0</strong> / <span id="badge-total-count">0</span> Dipilih
@@ -108,12 +109,12 @@
             </div>
 
             <!-- SORTABLE IMAGE GRID -->
-            <div id="images-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 min-h-[300px]">
+            <div id="images-grid" class="file-card-grid grid gap-4 min-h-[300px]">
                 <!-- Cards dynamically loaded -->
                 <div class="col-span-full py-16 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
                     <i data-lucide="image" class="w-12 h-12 mx-auto text-slate-400 dark:text-slate-500 mb-2"></i>
                     <p class="font-medium text-sm">Belum ada gambar yang dimuat.</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Masukkan path folder di atas atau pilih tab upload untuk memulai.</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilih folder gambar di atas atau gunakan Upload Manual.</p>
                 </div>
             </div>
         </div>
@@ -137,16 +138,16 @@
 
                 <!-- 1. Mode Hasil (Gabungan vs Terpisah) -->
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Mode Hasil</label>
-                    <div class="grid grid-cols-2 gap-2">
+                    <span id="convert-mode-label" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Mode Hasil</span>
+                    <div role="radiogroup" aria-labelledby="convert-mode-label" class="grid grid-cols-2 gap-2">
                         <label class="cursor-pointer">
-                            <input type="radio" name="convert-mode" value="combine" checked class="peer hidden" onchange="toggleModeFields()">
+                            <input type="radio" name="convert-mode" value="combine" checked class="peer control-radio" onchange="toggleModeFields()">
                             <div class="py-2 px-1 text-center text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors hover:border-brand-300 dark:hover:border-brand-500/50 peer-checked:border-brand-500 peer-checked:bg-brand-50 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300">
                                 1 PDF Gabungan
                             </div>
                         </label>
                         <label class="cursor-pointer">
-                            <input type="radio" name="convert-mode" value="individual" class="peer hidden" onchange="toggleModeFields()">
+                            <input type="radio" name="convert-mode" value="individual" class="peer control-radio" onchange="toggleModeFields()">
                             <div class="py-2 px-1 text-center text-xs font-semibold rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 cursor-pointer transition-colors hover:border-brand-300 dark:hover:border-brand-500/50 peer-checked:border-brand-500 peer-checked:bg-brand-50 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300">
                                 PDF Terpisah
                             </div>
@@ -159,20 +160,20 @@
 
                     <!-- Grouping Mode -->
                     <div class="space-y-1">
-                        <label class="font-bold text-brand-900 dark:text-brand-300 flex items-center gap-1 text-[11px]">
+                        <label for="group-type-select" class="font-bold text-brand-900 dark:text-brand-300 flex items-center gap-1 text-[11px]">
                             <i data-lucide="boxes" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Grouping Gambar:
                         </label>
                         <select id="group-type-select" onchange="updateGroupingUI()" class="w-full px-2 py-1.5 bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-500/30 rounded-lg font-medium text-slate-800 dark:text-slate-100 text-xs">
                             <option value="auto_n" selected>Auto Grouping per N Gambar</option>
                             <option value="single">1 Gambar = 1 File PDF (Tunggal)</option>
-                            <option value="custom">Custom Rentang Halaman (misal: 1-2, 3-5)</option>
+                            <option value="custom">Rentang gambar tertentu</option>
                         </select>
                     </div>
 
                     <!-- Input N Gambar per File -->
                     <div id="group-n-box" class="space-y-1">
                         <div class="flex justify-between items-center text-[11px]">
-                            <span class="font-semibold text-slate-700 dark:text-slate-200">Jumlah Gambar per File:</span>
+                            <label for="group-size-input" class="font-semibold text-slate-700 dark:text-slate-200">Jumlah Gambar per File:</label>
                             <span class="text-[10px] text-brand-700 dark:text-brand-300 font-bold">(Merge per Batch)</span>
                         </div>
                         <input type="number" id="group-size-input" value="2" min="1" max="100" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2.5 py-1 bg-white dark:bg-slate-900 border border-brand-300 dark:border-brand-500/40 rounded-lg font-bold text-brand-900 dark:text-brand-300 text-xs">
@@ -182,32 +183,33 @@
                     <div id="group-custom-box" class="hidden space-y-2">
                         <div class="space-y-1">
                             <div class="flex justify-between items-center text-[11px]">
-                                <span class="font-semibold text-slate-700 dark:text-slate-200">Default Grouping:</span>
+                                <label for="custom-default-group-size" class="font-semibold text-slate-700 dark:text-slate-200">Default Grouping:</label>
                                 <span class="text-[10px] text-brand-700 dark:text-brand-300 font-bold">(Gambar / File)</span>
                             </div>
                             <input type="number" id="custom-default-group-size" value="1" min="1" max="100" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-300 dark:border-brand-500/40 rounded-lg font-bold text-brand-900 dark:text-brand-300 text-xs">
                         </div>
 
                         <div class="space-y-1">
-                            <span class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Rentang Khusus:</span>
-                            <input type="text" id="custom-groups-input" placeholder="contoh: 105-108, 115-118" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-300 dark:border-brand-500/40 rounded-lg font-mono text-xs dark:text-slate-100">
+                            <label for="custom-groups-input" class="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Rentang Khusus:</label>
+                            <input type="text" id="custom-groups-input" placeholder="1-4, 5-8" aria-describedby="custom-groups-hint" oninput="onGroupingSettingsChange()" onchange="onGroupingSettingsChange()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-300 dark:border-brand-500/40 rounded-lg font-mono text-xs dark:text-slate-100">
+                            <span id="custom-groups-hint" class="text-[10px] text-muted block">Pisahkan setiap rentang gambar dengan koma.</span>
                         </div>
                     </div>
 
                     <!-- Format Penamaan File Hasil -->
                     <div class="space-y-1 pt-1.5 border-t border-brand-200/80 dark:border-brand-500/20">
-                        <label class="font-bold text-brand-900 dark:text-brand-300 flex items-center gap-1 text-[11px]">
+                        <span id="naming-mode-label" class="font-bold text-brand-900 dark:text-brand-300 flex items-center gap-1 text-[11px]">
                             <i data-lucide="tag" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Format Penamaan:
-                        </label>
-                        <div class="grid grid-cols-2 gap-1.5">
+                        </span>
+                        <div role="radiogroup" aria-labelledby="naming-mode-label" class="grid grid-cols-2 gap-1.5">
                             <label class="cursor-pointer">
-                                <input type="radio" name="naming-mode" value="original" checked class="peer hidden" onchange="updateNamingUI()">
+                                <input type="radio" name="naming-mode" value="original" checked class="peer control-radio" onchange="updateNamingUI()">
                                 <div class="py-1 px-1.5 text-center text-[10px] font-semibold rounded-lg bg-transparent border border-brand-200 dark:border-brand-500/30 cursor-pointer transition-colors hover:border-brand-300 dark:hover:border-brand-500/50 peer-checked:border-brand-500 peer-checked:bg-brand-50 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300">
                                     Nama Asli
                                 </div>
                             </label>
                             <label class="cursor-pointer">
-                                <input type="radio" name="naming-mode" value="sequence" class="peer hidden" onchange="updateNamingUI()">
+                                <input type="radio" name="naming-mode" value="sequence" class="peer control-radio" onchange="updateNamingUI()">
                                 <div class="py-1 px-1.5 text-center text-[10px] font-semibold rounded-lg bg-transparent border border-brand-200 dark:border-brand-500/30 cursor-pointer transition-colors hover:border-brand-300 dark:hover:border-brand-50/50 peer-checked:border-brand-500 peer-checked:bg-brand-50 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300">
                                     Nomor Urut
                                 </div>
@@ -219,15 +221,15 @@
                     <div id="naming-seq-box" class="hidden space-y-1.5 pt-0.5">
                         <!-- Arah Penomoran -->
                         <div>
-                            <div class="grid grid-cols-2 gap-1.5">
+                            <div role="radiogroup" aria-label="Arah penomoran" class="grid grid-cols-2 gap-1.5">
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="seq-direction" value="asc" checked class="peer hidden" onchange="updateLiveGroupingPreview()">
+                                    <input type="radio" name="seq-direction" value="asc" checked class="peer control-radio" onchange="updateLiveGroupingPreview()">
                                     <div class="py-1 px-1.5 text-center text-[10px] font-bold rounded-md border border-brand-200 dark:border-brand-500/30 bg-white dark:bg-slate-900 peer-checked:bg-brand-100 dark:peer-checked:bg-brand-500/20 peer-checked:text-brand-800 dark:peer-checked:text-brand-300 peer-checked:border-brand-400 dark:peer-checked:border-brand-500 flex items-center justify-center gap-1 transition-all">
                                         <i data-lucide="arrow-up" class="w-3 h-3 text-brand-600 dark:text-brand-400"></i> Naik (+1)
                                     </div>
                                 </label>
                                 <label class="cursor-pointer">
-                                    <input type="radio" name="seq-direction" value="desc" class="peer hidden" onchange="updateLiveGroupingPreview()">
+                                    <input type="radio" name="seq-direction" value="desc" class="peer control-radio" onchange="updateLiveGroupingPreview()">
                                     <div class="py-1 px-1.5 text-center text-[10px] font-bold rounded-md border border-brand-200 dark:border-brand-500/30 bg-white dark:bg-slate-900 peer-checked:bg-brand-100 dark:peer-checked:bg-brand-500/20 peer-checked:text-brand-800 dark:peer-checked:text-brand-300 peer-checked:border-brand-400 dark:peer-checked:border-brand-500 flex items-center justify-center gap-1 transition-all">
                                         <i data-lucide="arrow-down" class="w-3 h-3 text-brand-600 dark:text-brand-400"></i> Turun (-1)
                                     </div>
@@ -236,17 +238,23 @@
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
                             <div>
-                                <label class="text-[9px] font-bold text-slate-600 dark:text-slate-400">Start No</label>
+                                <label for="seq-start" class="text-xs font-bold text-slate-600 dark:text-slate-400">Start No</label>
                                 <input type="number" id="seq-start" value="1" min="0" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-500/30 rounded font-bold text-slate-800 dark:text-slate-100 text-xs">
                             </div>
                             <div>
-                                <label class="text-[9px] font-bold text-slate-600 dark:text-slate-400">Padding Nol</label>
+                                <label for="seq-pad" class="text-xs font-bold text-slate-600 dark:text-slate-400">Padding Nol</label>
                                 <input type="number" id="seq-pad" value="0" min="0" max="6" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-500/30 rounded font-bold text-slate-800 dark:text-slate-100 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <input type="text" id="seq-prefix" placeholder="Prefix" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-500/30 rounded text-[11px] dark:text-slate-100">
-                            <input type="text" id="seq-suffix" placeholder="Suffix" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-500/30 rounded text-[11px] dark:text-slate-100">
+                            <div>
+                                <label for="seq-prefix" class="text-xs text-muted">Prefix</label>
+                                <input type="text" id="seq-prefix" placeholder="Prefix" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-500/30 rounded text-[11px] dark:text-slate-100">
+                            </div>
+                            <div>
+                                <label for="seq-suffix" class="text-xs text-muted">Suffix</label>
+                                <input type="text" id="seq-suffix" placeholder="Suffix" oninput="updateLiveGroupingPreview()" class="w-full px-2 py-1 bg-white dark:bg-slate-900 border border-brand-200 dark:border-brand-500/30 rounded text-[11px] dark:text-slate-100">
+                            </div>
                         </div>
                     </div>
 
@@ -262,7 +270,7 @@
                         <div id="preview-files-list" style="min-height: 60px; max-height: 480px; height: 100px; overflow-y: auto !important; resize: vertical !important;" class="custom-resizable overflow-y-auto space-y-1 text-[10px] font-mono text-slate-600 dark:text-slate-400 pr-1 p-1.5 bg-brand-50/40 dark:bg-slate-950/40 rounded-lg border border-dashed border-brand-200 dark:border-brand-500/30">
                             <!-- Injected preview list -->
                         </div>
-                        <div class="flex items-center justify-between text-[9px] text-slate-400 dark:text-slate-500 select-none pt-0.5">
+                        <div class="flex items-center justify-between text-xs text-muted select-none pt-0.5">
                             <span>Tarik sudut bawah untuk atur tinggi ↕</span>
                             <span class="text-brand-600 dark:text-brand-400 font-semibold cursor-ns-resize">Tarik ↘</span>
                         </div>
@@ -272,7 +280,7 @@
                 <!-- 3. Ukuran Kertas & Orientasi (Terbuka, Lebar & Nyaman) -->
                 <div class="grid grid-cols-2 gap-2">
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Ukuran Kertas</label>
+                        <label for="paper-size" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Ukuran Kertas</label>
                         <select id="paper-size" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
                             <option value="fit" selected>Fit (Asli)</option>
                             <option value="a4">A4</option>
@@ -280,7 +288,7 @@
                         </select>
                     </div>
                     <div class="space-y-1">
-                        <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Orientasi</label>
+                        <label for="orientation" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Orientasi</label>
                         <select id="orientation" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
                             <option value="auto" selected>Otomatis</option>
                             <option value="portrait">Potret</option>
@@ -291,7 +299,7 @@
 
                 <!-- Margin Halaman -->
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Margin Halaman</label>
+                    <label for="margin-size" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Margin Halaman</label>
                     <select id="margin-size" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
                         <option value="none" selected>Tanpa Margin (Penuh)</option>
                         <option value="small">Margin Kecil</option>
@@ -301,23 +309,23 @@
 
                 <!-- Output Filename (Single PDF mode) -->
                 <div id="output-name-container" class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Nama File Hasil (.pdf)</label>
+                    <label for="output-filename" class="text-[11px] font-bold text-slate-700 dark:text-slate-200">Nama File Hasil (.pdf)</label>
                     <input type="text" id="output-filename" value="Scan_Gabungan.pdf" class="w-full px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
                 </div>
 
                 <!-- Custom Output Folder (Direct Save) -->
                 <div class="space-y-1">
-                    <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
-                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Folder Simpan Langsung (Opsional)
+                    <label for="custom-output-dir" class="text-[11px] font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Folder penyimpanan (opsional)
                     </label>
                     <div class="flex gap-1.5">
-                        <input type="text" id="custom-output-dir" placeholder="Contoh: D:\magang\hasil" class="flex-1 px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
+                        <input type="text" id="custom-output-dir" placeholder="Masukkan lokasi folder" class="flex-1 px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono">
                         <button type="button" onclick="selectCustomOutputDir('custom-output-dir')" title="Pilih folder simpan dari File Explorer" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap">
                             <i data-lucide="folder-search" class="w-3.5 h-3.5"></i>
                             <span>Pilih</span>
                         </button>
                     </div>
-                    <span class="text-[10px] text-slate-500 dark:text-slate-400 block">Jika diisi, file PDF langsung disimpan di folder ini.</span>
+                    <span class="text-[10px] text-slate-500 dark:text-slate-400 block">Jika kosong, hasil dapat diunduh melalui browser.</span>
                 </div>
 
                 </div> <!-- End image-pdf-settings-scroll -->
@@ -408,7 +416,7 @@
             </div>
 
             <div id="delete-modal-target-box" class="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-xs space-y-1 font-mono">
-                <div class="text-slate-400 dark:text-slate-500 text-[10px] uppercase font-bold tracking-wider font-sans">Target File:</div>
+                <div class="text-muted text-xs uppercase font-bold tracking-wider font-sans">Target File:</div>
                 <div id="delete-modal-target-name" class="font-bold text-slate-800 dark:text-slate-100 break-all">filename.jpg</div>
                 <div id="delete-modal-target-path" class="text-[11px] text-slate-500 dark:text-slate-400 break-all">D:\path\to\file</div>
             </div>
@@ -431,7 +439,7 @@
         meta='Dokumen Anda telah siap diunduh.',
         download_label='Unduh File Hasil',
         reset_label='Tutup',
-        reset_action="document.getElementById('result-modal').classList.add('hidden')"
+        reset_action="closeResultModal()"
     ) }}
 
 </div>
@@ -483,17 +491,24 @@
     async function scanLocalImagesFolder() {
         const folderPath = document.getElementById('local-folder-path').value.trim();
         if (!folderPath) {
-            showToast('Harap masukkan path folder komputer Anda.', 'warning');
+            showToast('Pilih folder gambar terlebih dahulu.', 'warning');
             return;
         }
 
         showToast(`Memindai gambar di '${folderPath}'...`, 'info');
         try {
-            const res = await fetch(`/api/browse-local-dir?path=${encodeURIComponent(folderPath)}`);
+            const res = await fetch('/api/browse-local-dir', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ path: folderPath })
+            });
             const data = await res.json();
 
             if (!data.success) {
-                showToast(data.message || 'Folder tidak ditemukan', 'error');
+                showToast(data.message || data.detail || 'Gagal memindai folder.', 'error');
                 return;
             }
 
@@ -718,7 +733,7 @@
 
         if (selectedItems.length === 0) {
             badgeTotal.innerText = '0 File';
-            previewList.innerHTML = '<span class="text-slate-400 dark:text-slate-500 italic">Belum ada gambar yang dipilih</span>';
+            previewList.innerHTML = '<span class="text-muted italic">Belum ada gambar yang dipilih</span>';
             return;
         }
 
@@ -818,7 +833,7 @@
             if (item.selected) selectedIndexCount++;
 
             const card = document.createElement('div');
-            card.className = `group relative bg-white dark:bg-slate-900 border ${item.selected ? 'border-brand-300 ring-2 ring-brand-400/20 shadow-sm dark:border-brand-500/60 dark:ring-brand-400/20' : 'border-slate-200 dark:border-slate-700 opacity-50'} rounded-2xl p-2.5 transition-all flex flex-col justify-between cursor-grab active:cursor-grabbing hover:shadow-md`;
+            card.className = `group relative bg-white dark:bg-slate-900 border ${item.selected ? 'border-brand-300 ring-2 ring-brand-400/20 shadow-sm dark:border-brand-500/60 dark:ring-brand-400/20' : 'border-slate-200 dark:border-slate-700'} rounded-2xl p-2.5 transition-all flex flex-col justify-between cursor-grab active:cursor-grabbing hover:shadow-md`;
             card.dataset.index = index;
 
             // Right click handler for instant big preview
@@ -839,15 +854,15 @@
 
             card.innerHTML = `
                 <!-- Top Checkbox & Page Badge -->
-                <div class="flex items-center justify-between mb-1.5 z-10">
+                <div class="file-card-toolbar mb-1.5">
                     <label class="flex items-center gap-1.5 cursor-pointer" onclick="event.stopPropagation()">
                         <input type="checkbox" ${item.selected ? 'checked' : ''} onchange="toggleItemSelection(${index})" class="w-4 h-4 rounded text-brand-500 focus:ring-brand-400 dark:bg-slate-800 dark:border-slate-600">
-                        <span class="text-[11px] font-bold ${item.selected ? 'text-brand-700 dark:text-brand-300' : 'text-slate-400 dark:text-slate-500'}">
+                        <span class="text-[11px] font-bold ${item.selected ? 'text-brand-700 dark:text-brand-300' : 'text-muted'}">
                             ${item.selected ? `Hal ${selectedIndexCount}` : 'Diabaikan'}
                         </span>
                     </label>
 
-                    <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+                    <div class="file-card-actions">
                         <button onclick="event.stopPropagation(); rotateImageItem(${index})" title="Putar 90°" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300">
                             <i data-lucide="rotate-cw" class="w-3 h-3"></i>
                         </button>
@@ -877,6 +892,7 @@
                 </div>
             `;
             imagesGrid.appendChild(card);
+            addReorderControls(card, index, imageList, renderImageGrid, item.name);
         });
 
         updateCounts();
@@ -886,6 +902,8 @@
         // SortableJS Drag & Drop Reorder
         if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(imagesGrid, {
+            filter: 'button, input, label',
+            preventOnFilter: false,
             animation: 200,
             ghostClass: 'sortable-ghost',
             chosenClass: 'sortable-chosen',
@@ -1293,7 +1311,7 @@
                 savedBox.classList.add('hidden');
             }
 
-            document.getElementById('result-modal').classList.remove('hidden');
+            openResultModal(btn);
             lucide.createIcons();
         } catch (err) {
             console.error(err);

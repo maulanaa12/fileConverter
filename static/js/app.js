@@ -39,9 +39,87 @@ function initTheme() {
 
 initTheme();
 
+let resultReturnFocus = null;
+
+function openResultModal(trigger) {
+    const dialog = document.getElementById('result-modal');
+    resultReturnFocus = trigger || document.activeElement;
+    dialog.querySelector('[data-dialog-notices]').replaceChildren();
+    if (!dialog.open) dialog.showModal();
+}
+
+function closeResultModal() {
+    document.getElementById('result-modal')?.close();
+}
+
+document.getElementById('result-modal')?.addEventListener('close', () => {
+    const candidates = [
+        resultReturnFocus,
+        document.querySelector('.dropzone button'),
+        document.getElementById('local-folder-path'),
+        document.querySelector('main a[href="/"]')
+    ];
+    const target = candidates.find(element => element?.isConnected && !element.disabled && element.getClientRects().length);
+    target?.focus();
+    resultReturnFocus = null;
+});
+
+document.getElementById('result-modal')?.addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const controls = [...event.currentTarget.querySelectorAll('a[href], button:not(:disabled)')]
+        .filter(element => element.getClientRects().length);
+    const first = controls[0];
+    const last = controls[controls.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+});
+
+document.getElementById('mobile-tool-menu')?.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        event.currentTarget.open = false;
+        event.currentTarget.querySelector('summary').focus();
+    }
+});
+
+function addReorderControls(card, index, items, render, itemName) {
+    const controls = document.createElement('div');
+    controls.className = 'reorder-controls';
+    const grid = card.parentElement;
+
+    for (const [offset, text] of [[-1, 'Naik'], [1, 'Turun']]) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = text;
+        button.dataset.move = offset;
+        button.setAttribute('aria-label', `${text}: ${itemName}, posisi ${index + 1} dari ${items.length}`);
+        button.disabled = index + offset < 0 || index + offset >= items.length;
+        button.addEventListener('click', () => {
+            const nextIndex = index + offset;
+            const [moved] = items.splice(index, 1);
+            items.splice(nextIndex, 0, moved);
+            render();
+            const nextCard = grid.querySelector(`[data-index="${nextIndex}"]`);
+            const sameControl = nextCard.querySelector(`[data-move="${offset}"]`);
+            (sameControl.disabled ? nextCard.querySelector('.reorder-controls button:not(:disabled)') : sameControl)?.focus();
+            document.getElementById('order-status').textContent = `${itemName} dipindahkan ke posisi ${nextIndex + 1} dari ${items.length}.`;
+        });
+        controls.appendChild(button);
+    }
+    card.appendChild(controls);
+}
+
 // Toast Notification Manager
 function showToast(message, type = 'info', duration = 3500) {
-    const container = document.getElementById('toast-container');
+    const dialog = document.getElementById('result-modal');
+    const container = dialog?.open
+        ? dialog.querySelector('[data-dialog-notices]')
+        : document.getElementById('toast-container');
     if (!container) return;
 
     const toast = document.createElement('div');
@@ -67,7 +145,7 @@ function showToast(message, type = 'info', duration = 3500) {
     toast.innerHTML = `
         <span class="flex items-center justify-center w-8 h-8 rounded-lg ${iconChip} [&>svg]:w-4 [&>svg]:h-4">${iconSvg}</span>
         <span class="flex-1">${message}</span>
-        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300 p-0.5 rounded-lg">
+        <button aria-label="Tutup pemberitahuan" onclick="this.parentElement.remove()" class="text-muted p-0.5 rounded-lg">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     `;

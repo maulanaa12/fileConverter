@@ -8,7 +8,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
             <div class="flex items-center gap-2">
-                <a href="/" class="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
+                <a href="/" aria-label="Kembali ke beranda" class="back-link text-muted"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Compress PDF</h1>
             </div>
             <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Perkecil ukuran dokumen PDF tanpa mengurangi kualitas teks dan gambar secara berlebihan.</p>
@@ -23,7 +23,7 @@
                 <i data-lucide="minimize-2" class="w-10 h-10"></i>
             </div>
             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-100">Pilih 1 file PDF yang ingin dikompres</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Tarik file PDF ke sini atau klik untuk memilih dari komputer</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Atau tarik dan letakkan file PDF di sini.</p>
             <button type="button" class="mt-6 px-6 py-3 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 dark:shadow-none transition-all transform active:scale-95 flex items-center gap-2">
                 <i data-lucide="folder-open" class="w-5 h-5"></i>
                 Pilih File PDF
@@ -43,7 +43,7 @@
                     </div>
                     <div>
                         <h4 id="pdf-name" class="font-bold text-slate-900 dark:text-white text-base">dokumen.pdf</h4>
-                        <div class="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500 mt-1">
+                        <div class="flex items-center gap-3 text-xs text-muted mt-1">
                             <span id="pdf-size" class="font-semibold text-slate-700 dark:text-slate-300">2.5 MB</span>
                             <span>&bull;</span>
                             <span id="pdf-pages">10 Halaman</span>
@@ -63,43 +63,43 @@
                     <i data-lucide="zap" class="w-5 h-5 text-brand-600 dark:text-brand-400"></i> Tingkat Kompresi
                 </h3>
 
-                <div class="space-y-2">
+                <div role="radiogroup" aria-label="Tingkat kompresi" class="space-y-2">
                     <label class="cursor-pointer block">
-                        <input type="radio" name="compress-level" value="low" class="peer hidden">
+                        <input type="radio" name="compress-level" value="low" class="peer control-radio">
                         <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300 transition-colors cursor-pointer">
                             <span class="block">📄 Kompresi Ringan</span>
-                            <span class="block font-normal text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Optimalkan struktur PDF tanpa mengubah kualitas gambar</span>
+                            <span class="block font-normal text-xs text-muted mt-0.5">Optimalkan struktur PDF tanpa mengubah kualitas gambar</span>
                         </div>
                     </label>
                     <label class="cursor-pointer block">
-                        <input type="radio" name="compress-level" value="medium" checked class="peer hidden">
+                        <input type="radio" name="compress-level" value="medium" checked class="peer control-radio">
                         <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300 transition-colors cursor-pointer">
                             <span class="block">⚡ Kompresi Optimal (Rekomendasi)</span>
-                            <span class="block font-normal text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Keseimbangan ukuran file dan kualitas gambar</span>
+                            <span class="block font-normal text-xs text-muted mt-0.5">Keseimbangan ukuran file dan kualitas gambar</span>
                         </div>
                     </label>
                     <label class="cursor-pointer block">
-                        <input type="radio" name="compress-level" value="high" class="peer hidden">
+                        <input type="radio" name="compress-level" value="high" class="peer control-radio">
                         <div class="p-3 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 peer-checked:bg-brand-50 peer-checked:border-brand-500 peer-checked:text-brand-700 dark:peer-checked:bg-brand-500/10 dark:peer-checked:border-brand-500 dark:peer-checked:text-brand-300 transition-colors cursor-pointer">
                             <span class="block">🔥 Kompresi Maksimal</span>
-                            <span class="block font-normal text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">Ukuran terkecil, gambar dikompres agresif</span>
+                            <span class="block font-normal text-xs text-muted mt-0.5">Ukuran terkecil, gambar dikompres agresif</span>
                         </div>
                     </label>
                 </div>
 
                 <!-- Custom Output Folder (Optional) -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Simpan Langsung ke Folder (Opsional)
+                    <label for="custom-output-dir" class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                        <i data-lucide="folder-output" class="w-3.5 h-3.5 text-brand-600 dark:text-brand-400"></i> Folder penyimpanan (opsional)
                     </label>
                     <div class="flex gap-1.5">
-                        <input type="text" id="custom-output-dir" placeholder="Contoh: D:\hasil_compress atau ./file" class="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono placeholder-slate-400 dark:placeholder-slate-500">
+                        <input type="text" id="custom-output-dir" placeholder="Masukkan lokasi folder" class="flex-1 px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 focus:outline-none font-mono placeholder-slate-400 dark:placeholder-slate-500">
                         <button type="button" onclick="selectCustomOutputDir('custom-output-dir')" title="Pilih folder simpan dari File Explorer" class="px-2.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-xs font-semibold rounded-xl flex items-center gap-1 transition-colors cursor-pointer whitespace-nowrap">
                             <i data-lucide="folder-search" class="w-3.5 h-3.5"></i>
                             <span>Pilih</span>
                         </button>
                     </div>
-                    <span class="text-[10px] text-slate-400 dark:text-slate-500 block">Kosongkan jika hanya ingin download via browser.</span>
+                    <span class="text-xs text-muted block">Jika kosong, hasil dapat diunduh melalui browser.</span>
                 </div>
 
                 <!-- Compress Action Button -->
@@ -223,7 +223,7 @@
                 savedBox.classList.add('hidden');
             }
 
-            document.getElementById('result-modal').classList.remove('hidden');
+            openResultModal(btn);
             lucide.createIcons();
         } catch (err) {
             console.error(err);
@@ -256,7 +256,7 @@
     }
 
     function resetTool() {
-        document.getElementById('result-modal').classList.add('hidden');
+        closeResultModal();
         currentPdf = null;
         renderWorkspace();
     }

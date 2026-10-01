@@ -1,12 +1,12 @@
 {% macro result_modal(title, meta, download_label, reset_label, reset_action="resetTool()") -%}
 <!-- Modal Success / Download Result -->
-<div id="result-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+<dialog id="result-modal" aria-labelledby="result-title" aria-describedby="result-meta" class="result-dialog">
     <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 max-w-md w-full text-center space-y-6 shadow-2xl border border-slate-100 dark:border-slate-800 modal-pop">
         <div class="w-16 h-16 bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400 rounded-2xl flex items-center justify-center mx-auto ring-8 ring-emerald-50 dark:ring-emerald-500/10">
             <i data-lucide="check-circle-2" class="w-8 h-8"></i>
         </div>
         <div>
-            <h3 class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ title }}</h3>
+            <h3 id="result-title" class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ title }}</h3>
             <p id="result-meta" class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ meta }}</p>
             <div id="saved-folder-box" class="hidden mt-3 p-3 bg-emerald-50 border border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30 rounded-xl text-left text-xs">
                 <span class="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
@@ -20,7 +20,7 @@
         </div>
 
         <div class="space-y-3">
-            <a id="btn-download-result" href="#" download class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 dark:shadow-none transition-all flex items-center justify-center gap-2">
+            <a id="btn-download-result" href="#" download autofocus class="w-full py-3.5 bg-brand-500 hover:bg-brand-600 text-white font-bold rounded-2xl shadow-lg shadow-brand-500/25 dark:shadow-none transition-all flex items-center justify-center gap-2">
                 <i data-lucide="download" class="w-5 h-5"></i>
                 {{ download_label }}
             </a>
@@ -28,6 +28,10 @@
                 {{ reset_label }}
             </button>
         </div>
+        {% if reset_label != 'Tutup' %}
+        <button type="button" onclick="closeResultModal()" class="text-sm font-semibold text-slate-700 dark:text-slate-200">Tutup hasil</button>
+        {% endif %}
+        <div data-dialog-notices aria-live="polite" class="space-y-3"></div>
     </div>
-</div>
+</dialog>
 {%- endmacro %}

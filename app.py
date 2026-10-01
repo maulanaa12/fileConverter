@@ -109,8 +109,10 @@ def sanitize_error(e: Exception) -> str:
     return sanitized
 
 
-def handle_custom_save(source_file: Path, custom_output_dir: Optional[str]) -> Optional[str]:
-    """Menyimpan salinan file output ke folder kustom yang ditentukan pengguna jika ada."""
+def handle_custom_save(
+    source_file: Path, custom_output_dir: Optional[str], *, copy_archive: bool = True
+) -> Optional[str]:
+    """Simpan hasil ke folder pilihan; ZIP dapat diekstrak tanpa disalin."""
     if not custom_output_dir or not custom_output_dir.strip():
         return None
     try:
@@ -118,10 +120,12 @@ def handle_custom_save(source_file: Path, custom_output_dir: Optional[str]) -> O
         clean_dir = Path(custom_output_dir.strip('"\'')).resolve()
         clean_dir.mkdir(parents=True, exist_ok=True)
         dest_file = clean_dir / source_file.name
-        shutil.copy2(source_file, dest_file)
+        is_archive = source_file.suffix.lower() == '.zip'
+        if not is_archive or copy_archive:
+            shutil.copy2(source_file, dest_file)
 
         # Jika file adalah zip, ekstrak isi file ke folder tujuan
-        if source_file.suffix.lower() == '.zip':
+        if is_archive:
             try:
                 with zipfile.ZipFile(source_file, 'r') as z:
                     # SEC-09: Validasi setiap entry untuk mencegah ZIP Slip
@@ -134,9 +138,10 @@ def handle_custom_save(source_file: Path, custom_output_dir: Optional[str]) -> O
                             continue
                         z.extract(entry, clean_dir)
             except Exception:
-                pass
+                if not copy_archive:
+                    raise
 
-        return str(dest_file)
+        return str(dest_file if copy_archive or not is_archive else clean_dir)
     except Exception as e:
         print(f"Gagal menyimpan ke folder kustom '{custom_output_dir}': {e}")
         return None
@@ -218,6 +223,9 @@ class ImageToPdfRequest(BaseModel):
     padding: int = 0
     suffix: str = ""
     custom_output_dir: Optional[str] = None
+
+class LocalDirectoryRequest(BaseModel):
+    path: str
 
 class PdfToImageRequest(BaseModel):
     pdf_path: str
@@ -400,7 +408,9 @@ async def api_image_to_pdf(request: Request, req: ImageToPdfRequest):
         actual_path = Path(result["output_path"])
         actual_name = actual_path.name
         result["download_url"] = f"/api/download/{task_id}/{actual_name}"
-        result["saved_to_folder"] = handle_custom_save(actual_path, req.custom_output_dir)
+        result["saved_to_folder"] = handle_custom_save(
+            actual_path, req.custom_output_dir, copy_archive=req.mode == "combine"
+        )
         return JSONResponse(result)
     except Exception as e:
         return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
@@ -560,47 +570,60 @@ async def api_local_file_preview(request: Request, path: str, thumb: bool = Fals
         raise HTTPException(status_code=400, detail=sanitize_error(e))
 
 
+def local_directory_listing(target_dir: Path) -> JSONResponse:
+    import urllib.parse
+
+    img_ext = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff')
+    supported_ext = ('.pdf',) + img_ext
+    files = []
+    for f in target_dir.iterdir():
+        if f.is_file() and f.suffix.lower() in supported_ext:
+            is_img = f.suffix.lower() in img_ext
+            encoded_path = urllib.parse.quote(str(f))
+            files.append({
+                "name": f.name,
+                "path": str(f),
+                "is_image": is_img,
+                "size_bytes": f.stat().st_size,
+                "size_formatted": format_bytes(f.stat().st_size),
+                "thumb_url": f"/api/local-file-preview?path={encoded_path}&thumb=true",
+                "preview_url": f"/api/local-file-preview?path={encoded_path}"
+            })
+
+    files.sort(key=lambda x: natural_sort_key(x["name"]))
+    return JSONResponse({"success": True, "folder": str(target_dir), "files": files})
+
+
 @app.get("/api/browse-local-dir")
 @limiter.limit(RATE_GENERAL)
 async def api_browse_local_dir(request: Request, path: str):
-    """Membaca daftar file dari path folder lokal komputer beserta url preview."""
+    """Membaca folder yang sudah dipilih lewat dialog atau tindakan pindai lokal."""
     try:
-        import urllib.parse
         target_dir = Path(path.strip("'\"")).resolve()
-
-        # SEC-01 FIX: Validasi folder ada di allowed registry
         validate_path_allowed(target_dir)
-
-        if not target_dir.exists() or not target_dir.is_dir():
+        if not target_dir.is_dir():
             return JSONResponse({"success": False, "message": f"Folder '{path}' tidak ditemukan."}, status_code=404)
-            
-        img_ext = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.tif', '.tiff')
-        supported_ext = ('.pdf',) + img_ext
-        
-        files = []
-        for f in target_dir.iterdir():
-            if f.is_file() and f.suffix.lower() in supported_ext:
-                is_img = f.suffix.lower() in img_ext
-                encoded_path = urllib.parse.quote(str(f))
-                files.append({
-                    "name": f.name,
-                    "path": str(f),
-                    "is_image": is_img,
-                    "size_bytes": f.stat().st_size,
-                    "size_formatted": format_bytes(f.stat().st_size),
-                    "thumb_url": f"/api/local-file-preview?path={encoded_path}&thumb=true",
-                    "preview_url": f"/api/local-file-preview?path={encoded_path}"
-                })
-                
-        files.sort(key=lambda x: natural_sort_key(x["name"]))
-        
-        return JSONResponse({
-            "success": True,
-            "folder": str(target_dir),
-            "files": files
-        })
+        return local_directory_listing(target_dir)
     except HTTPException:
         raise
+    except Exception as e:
+        return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
+
+
+@app.post("/api/browse-local-dir")
+@limiter.limit(RATE_GENERAL)
+async def api_browse_local_dir_from_input(request: Request, req: LocalDirectoryRequest):
+    """Izinkan path yang dimasukkan pengguna dari halaman lokal, lalu pindai foldernya."""
+    local_host = request.url.hostname in {"127.0.0.1", "localhost", "::1"}
+    same_origin = request.headers.get("origin") == f"{request.url.scheme}://{request.headers.get('host')}"
+    if not (local_host and same_origin and request.headers.get("x-requested-with") == "XMLHttpRequest"):
+        raise HTTPException(status_code=403, detail="Pilih folder dari halaman aplikasi lokal.")
+    try:
+        target_dir = Path(req.path.strip().strip("'\"")).resolve()
+        if not target_dir.is_dir():
+            return JSONResponse({"success": False, "message": f"Folder '{req.path}' tidak ditemukan."}, status_code=404)
+        get_registry().register(target_dir)
+        return local_directory_listing(target_dir)
     except Exception as e:
         return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 
