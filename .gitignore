@@ -55,3 +55,7 @@ Desktop.ini
 .impeccable/config.local.json
 .impeccable/live/sessions/
 .impeccable/live/variants/
+
+# Local Anti Slop artifacts
+/anti-slop/
+/antislop/
