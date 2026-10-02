@@ -3,8 +3,55 @@ node_modules/
 
 # Python
 __pycache__/
+*.py[cod]
+*$py.class
 venv/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
 
 # App runtime data
 uploads/
 outputs/
+edge_profile/
+rename_history.json
+
+# Local document analysis artifacts
+/analysis-2017/
+/analyze_2017_temp.py
+
+# PyInstaller & Installer outputs
+build/
+dist/
+installer/output/
+
+# Logs, temporary files, and local environment settings
+*.log
+*.tmp
+*.temp
+*.bak
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Machine-specific editor and OS files
+.idea/
+*.code-workspace
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local Impeccable session data (keep shared design documentation)
+.impeccable/config.local.json
+.impeccable/live/sessions/
+.impeccable/live/variants/
