@@ -72,6 +72,30 @@ const originUrl = () => {
   return result.status === 0 ? result.stdout.trim() : '';
 };
 
+const currentBranch = () => {
+  const result = cp.spawnSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+    cwd: env.ORCA_REPO_PATH || process.cwd(),
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  if (result.status === 0) {
+    const b = result.stdout.trim();
+    if (b && b !== 'HEAD') {
+      return b;
+    }
+  }
+  return 'main';
+};
+
+const currentHead = () => {
+  const result = cp.spawnSync('git', ['rev-parse', 'HEAD'], {
+    cwd: env.ORCA_REPO_PATH || process.cwd(),
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  return result.status === 0 ? result.stdout.trim() : '';
+};
+
 const httpsCloneUrl = (url) => {
   if (url.startsWith('https://') || url.startsWith('http://')) {
     return url;
@@ -103,12 +127,22 @@ const repoDirName = (url) => {
 };
 
 const readPayload = () => {
-  const payload = JSON.parse(fs.readFileSync(0, 'utf8'));
+  let payload = {};
+  try {
+    payload = JSON.parse(fs.readFileSync(0, 'utf8'));
+  } catch (e) {}
   const userData = (payload.recipeResult && payload.recipeResult.userData) || {};
-  if (!userData.machineId) {
+  let machineId = userData.machineId;
+  if (!machineId && (payload.instanceId || env.ORCA_VM_INSTANCE_ID)) {
+    machineId = machineName(
+      env.ORCA_WORKSPACE_NAME || payload.workspaceName || 'workspace',
+      payload.instanceId || env.ORCA_VM_INSTANCE_ID
+    );
+  }
+  if (!machineId) {
     fail('This workspace has no Instabox machine id in its recipe result.');
   }
-  return { machineId: userData.machineId, recipeResult: payload.recipeResult };
+  return { machineId: machineId, recipeResult: payload.recipeResult };
 };
 
 const machineState = (machineId) => {
@@ -180,9 +214,9 @@ const CLAUDE_ONBOARDED = [
   .join(QUOTE);
 
 const checkoutWorkspaceBranch = (machineId, repoUrl, projectRoot) => {
-  const branch = env.ORCA_REPO_BRANCH;
-  const head = env.ORCA_REPO_REF_HEAD;
-  if (!branch || !head) {
+  const branch = env.ORCA_REPO_BRANCH || currentBranch();
+  const head = env.ORCA_REPO_REF_HEAD || currentHead();
+  if (!branch) {
     throw new Error('Orca did not pass the workspace branch and start commit.');
   }
   const git = 'git -C ' + shellQuote(projectRoot) + ' ';
@@ -192,16 +226,26 @@ const checkoutWorkspaceBranch = (machineId, repoUrl, projectRoot) => {
   if (env.ORCA_REPO_REF) {
     remote(machineId, git + 'fetch --quiet -- ' + shellQuote(url) + ' ' + shellQuote(env.ORCA_REPO_REF), fetchFlags, fetchOptions);
   }
-  if (remote(machineId, git + 'cat-file -e ' + shellQuote(head + '^{commit}'), [], { quiet: true }).status !== 0) {
-    remote(machineId, git + 'fetch --quiet -- ' + shellQuote(url) + ' ' + shellQuote(head), fetchFlags, fetchOptions);
-  }
-  if (remote(machineId, git + 'cat-file -e ' + shellQuote(head + '^{commit}'), [], { quiet: true }).status !== 0) {
-    throw new Error('The start commit ' + head.slice(0, 12) + ' is not on the Git host. Push it, then create the workspace again.');
-  }
-  log('Checking out ' + branch + ' at ' + head.slice(0, 12) + '.');
-  const checkout = remote(machineId, git + 'checkout --quiet -B ' + shellQuote(branch) + ' ' + shellQuote(head));
-  if (checkout.status !== 0) {
-    throw new Error('Could not check out ' + branch + ' on the machine.');
+  if (head) {
+    if (remote(machineId, git + 'cat-file -e ' + shellQuote(head + '^{commit}'), [], { quiet: true }).status !== 0) {
+      remote(machineId, git + 'fetch --quiet -- ' + shellQuote(url) + ' ' + shellQuote(head), fetchFlags, fetchOptions);
+    }
+    if (remote(machineId, git + 'cat-file -e ' + shellQuote(head + '^{commit}'), [], { quiet: true }).status !== 0) {
+      log('Head ' + head.slice(0, 12) + ' not present on remote, falling back to branch ' + branch);
+      remote(machineId, git + 'checkout --quiet ' + shellQuote(branch), [], { quiet: true });
+      return;
+    }
+    log('Checking out ' + branch + ' at ' + head.slice(0, 12) + '.');
+    const checkout = remote(machineId, git + 'checkout --quiet -B ' + shellQuote(branch) + ' ' + shellQuote(head));
+    if (checkout.status !== 0) {
+      throw new Error('Could not check out ' + branch + ' on the machine.');
+    }
+  } else {
+    log('Checking out ' + branch + '.');
+    const checkout = remote(machineId, git + 'checkout --quiet ' + shellQuote(branch));
+    if (checkout.status !== 0) {
+      throw new Error('Could not check out ' + branch + ' on the machine.');
+    }
   }
 };
 
