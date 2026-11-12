@@ -3,10 +3,10 @@ environmentRecipes:
     name: Instabox
     checkoutMode: provisioned-root
     description: A new Instabox cloud machine for each workspace, from the default template. Needs the instabox CLI, signed in.
-    create: ./scripts/orca-vm/instabox-create.cmd
-    suspend: ./scripts/orca-vm/instabox-suspend.cmd
-    resume: ./scripts/orca-vm/instabox-resume.cmd
-    destroy: ./scripts/orca-vm/instabox-destroy.cmd
+    create: .\scripts\orca-vm\instabox-create.cmd
+    suspend: .\scripts\orca-vm\instabox-suspend.cmd
+    resume: .\scripts\orca-vm\instabox-resume.cmd
+    destroy: .\scripts\orca-vm\instabox-destroy.cmd
 
 scripts:
   setup: npm ci && pip install --break-system-packages -r requirements.txt
