@@ -7,6 +7,7 @@ __pycache__/
 *$py.class
 venv/
 .venv/
+/.venv-installer/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -17,6 +18,19 @@ venv/
 htmlcov/
 coverage.xml
 
+# Test and temporary outputs
+/pytest-of-*/
+/pip-build-tracker-*/
+/pip-ephem-wheel-cache-*/
+/pip-install-*/
+/tmp/
+/setup.log
+
+# Local scan analysis outputs
+/analysis-2017-4/
+/analysis-2018-7/
+/analysis-2018-9/
+
 # App runtime data
 uploads/
 outputs/
@@ -26,6 +40,7 @@ rename_history.json
 # Local document analysis artifacts
 /analysis-2017/
 /analyze_2017_temp.py
+/analyze_scans.py
 
 # PyInstaller & Installer outputs
 build/

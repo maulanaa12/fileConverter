@@ -8,6 +8,12 @@ echo.
 
 cd /d "%~dp0"
 
+:: 0. Gunakan .venv-installer jika tersedia
+if exist ".venv-installer\Scripts\activate.bat" (
+    echo [INFO] Mengaktifkan virtual environment .venv-installer...
+    call ".venv-installer\Scripts\activate.bat"
+)
+
 :: 1. Cek Python
 where python >nul 2>&1
 if %errorlevel% neq 0 (
@@ -31,7 +37,7 @@ if not exist "static\app_icon.ico" (
 
 :: 4. Bersihkan build lama
 echo [INFO] Membersihkan direktori build lama...
-if exist "build" rd /s /q "build"
+if exist "build\localpdf" rd /s /q "build\localpdf"
 if exist "dist\LocalPDFStudio" rd /s /q "dist\LocalPDFStudio"
 
 :: 5. Jalankan PyInstaller
