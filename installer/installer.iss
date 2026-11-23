@@ -30,6 +30,7 @@ SetupIconFile=..\static\app_icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
+RedirectionGuard=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -42,42 +43,9 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Source: "..\dist\LocalPDFStudio\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Uninstall {#MyAppName}"; Filename: "{uninstallexe}"
-; Desktop shortcut is created via [Code] to handle OneDrive permission errors gracefully
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
-
-[UninstallDelete]
-Type: files; Name: "{autodesktop}\{#MyAppName}.lnk"
-
-[Code]
-procedure CurStepChanged(CurStep: TSetupStep);
-var
-  DesktopPath: String;
-  ShortcutPath: String;
-begin
-  if (CurStep = ssPostInstall) and WizardIsTaskSelected('desktopicon') then
-  begin
-    DesktopPath := ExpandConstant('{autodesktop}');
-    ShortcutPath := DesktopPath + '\{#MyAppName}.lnk';
-    try
-      CreateShellLink(
-        ShortcutPath,
-        '',
-        ExpandConstant('{app}\{#MyAppExeName}'),
-        '',
-        ExpandConstant('{app}'),
-        ExpandConstant('{app}\{#MyAppExeName}'),
-        0,
-        SW_SHOWNORMAL);
-    except
-      Log('Desktop shortcut could not be created: ' + GetExceptionMessage);
-      if not WizardSilent then
-        MsgBox('The application has been installed successfully, but Windows did not allow the Desktop shortcut to be created.' + #13#10 + #13#10 +
-               'Open LocalPDF Studio from the Start Menu if you selected a Start Menu folder, or open LocalPDFStudio.exe in the installation folder.',
-               mbInformation, MB_OK);
-    end;
-  end;
-end;
