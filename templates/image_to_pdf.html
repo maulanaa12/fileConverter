@@ -1298,6 +1298,9 @@
 
             const filesWord = data.total_files > 1 ? `${data.total_files} File PDF` : `1 File PDF`;
             document.getElementById('result-meta').innerText = `${data.total_images} Gambar berhasil diproses menjadi ${filesWord} (${formatBytes(data.file_size)}).`;
+            if (data.warning) {
+                document.getElementById('result-meta').innerText += ` ${data.warning}`;
+            }
             const downloadBtn = document.getElementById('btn-download-result');
             downloadBtn.href = data.download_url;
             downloadBtn.download = data.filename;

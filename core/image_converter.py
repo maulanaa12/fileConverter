@@ -1,6 +1,6 @@
 import os
-import io
 import zipfile
+from tempfile import TemporaryDirectory
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from PIL import Image, ImageOps
@@ -12,8 +12,6 @@ except ImportError:
         import fitz
     except ImportError:
         fitz = None
-
-from .utils import natural_sort_key
 
 # Standar ukuran kertas dalam points (72 points = 1 inch)
 PAGE_SIZES = {
@@ -32,17 +30,15 @@ MARGINS = {
 
 def prepare_image_for_pdf(image_path: str | Path) -> Image.Image:
     """Mempersiapkan gambar dengan orientasi EXIF yang benar dan background putih jika ada transparansi."""
-    img = Image.open(image_path)
-    img = ImageOps.exif_transpose(img)
-    
-    if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
-        rgb_img = Image.new('RGB', img.size, (255, 255, 255))
-        if img.mode != 'RGBA':
-            img = img.convert('RGBA')
-        rgb_img.paste(img, mask=img.split()[3])
-        return rgb_img
-    else:
-        return img.convert('RGB')
+    with Image.open(image_path) as source:
+        with ImageOps.exif_transpose(source) as img:
+            if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):
+                with img.convert('RGBA') as rgba:
+                    rgb_img = Image.new('RGB', rgba.size, (255, 255, 255))
+                    with rgba.getchannel('A') as alpha:
+                        rgb_img.paste(rgba, mask=alpha)
+                    return rgb_img
+            return img.convert('RGB')
 
 
 def fit_image_to_page(img: Image.Image, page_size: tuple[int, int], margin: int = 0) -> Image.Image:
@@ -183,8 +179,9 @@ def convert_images_to_pdf(
         else:
             p = Path(str(item))
             rot = 0
-        if p.exists() and p.is_file():
-            parsed_items.append((p, rot))
+        if not p.is_file():
+            raise FileNotFoundError(f"Gambar sumber tidak ditemukan: {p.name}")
+        parsed_items.append((p, rot))
 
     if not parsed_items:
         raise ValueError("Tidak ada file gambar valid yang ditemukan.")
@@ -192,121 +189,73 @@ def convert_images_to_pdf(
     margin = MARGINS.get(margin_size.lower(), 0)
     base_page_size = PAGE_SIZES.get(paper_size.lower(), None)
     
-    processed_images = []
-    
-    for p, rot in parsed_items:
-        img = prepare_image_for_pdf(p)
-        if rot != 0:
-            img = img.rotate(-rot, expand=True)
-        
-        # Tentukan ukuran halaman
-        if base_page_size is not None:
-            pw, ph = base_page_size
-            if orientation == "landscape":
-                target_size = (max(pw, ph), min(pw, ph))
-            elif orientation == "portrait":
-                target_size = (min(pw, ph), max(pw, ph))
-            else: # auto
-                if img.width > img.height:
-                    target_size = (max(pw, ph), min(pw, ph))
-                else:
-                    target_size = (min(pw, ph), max(pw, ph))
-            
-            page_img = fit_image_to_page(img, target_size, margin=margin)
-            processed_images.append(page_img)
+    if not fitz:
+        raise RuntimeError("PyMuPDF diperlukan untuk konversi gambar ke PDF.")
+    from .image_pdf_writer import write_image_pdf
+
+    total_imgs = len(parsed_items)
+    combined = mode == "combine"
+    groups = [list(range(total_imgs))] if combined else create_image_groups(
+        total_imgs, group_size=group_size, custom_groups_str=custom_groups_str
+    )
+    final_path = output_path if combined else output_path.with_suffix(".zip")
+    seen_names = set()
+    generated_files_count = 0
+
+    with TemporaryDirectory(prefix=".image-pdf-", dir=final_path.parent) as scratch:
+        scratch_path = Path(scratch)
+        staged_output = scratch_path / ("result.pdf" if combined else "result.zip")
+        if combined:
+            write_image_pdf(parsed_items, staged_output, scratch_path, base_page_size,
+                            orientation, margin, prepare_image_for_pdf)
+            generated_files_count = 1
         else:
-            # Mode "fit" (ukuran asli gambar)
-            if margin > 0:
-                target_size = (img.width + (2 * margin), img.height + (2 * margin))
-                page_img = fit_image_to_page(img, target_size, margin=margin)
-                processed_images.append(page_img)
-            else:
-                processed_images.append(img)
-                
-    total_imgs = len(processed_images)
-
-    if mode == "combine":
-        # Simpan semua gambar ke dalam satu file PDF tunggal
-        first_img = processed_images[0]
-        other_imgs = processed_images[1:] if total_imgs > 1 else []
-        first_img.save(
-            output_path,
-            "PDF",
-            resolution=100.0,
-            save_all=True,
-            append_images=other_imgs
-        )
-        return {
-            "success": True,
-            "mode": "combine",
-            "output_path": str(output_path),
-            "filename": output_path.name,
-            "total_images": total_imgs,
-            "total_files": 1,
-            "file_size": output_path.stat().st_size
-        }
-    else:
-        # Mode Terpisah (Individual / Grouping per N Gambar) -> Dikemas ke ZIP
-        zip_output_path = output_path.with_suffix(".zip")
-        groups = create_image_groups(total_imgs, group_size=group_size, custom_groups_str=custom_groups_str)
-        
-        seen_names = set()
-        generated_files_count = 0
-
-        with zipfile.ZipFile(zip_output_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for g_idx, indices in enumerate(groups):
-                if not indices:
-                    continue
-                first_img = processed_images[indices[0]]
-                other_imgs = [processed_images[i] for i in indices[1:]] if len(indices) > 1 else []
-                
-                # Tentukan nama file
-                if naming_mode == "sequence":
-                    cur_val = start_num + (g_idx * step)
-                    num_str = f"{cur_val:0{padding}d}" if padding > 0 else str(cur_val)
-                    pdf_name = f"{prefix}{num_str}{suffix}.pdf"
-                else:
-                    # Naming mode: original
-                    if len(indices) == 1:
-                        base_stem = parsed_items[indices[0]][0].stem
-                        pdf_name = f"{prefix}{base_stem}{suffix}.pdf"
+            with zipfile.ZipFile(staged_output, "w", zipfile.ZIP_DEFLATED) as zipf:
+                for g_idx, indices in enumerate(groups):
+                    if naming_mode == "sequence":
+                        cur_val = start_num + g_idx * step
+                        num_str = f"{cur_val:0{padding}d}" if padding > 0 else str(cur_val)
+                        pdf_name = f"{prefix}{num_str}{suffix}.pdf"
                     else:
                         first_stem = parsed_items[indices[0]][0].stem
                         last_stem = parsed_items[indices[-1]][0].stem
-                        if first_stem == last_stem:
-                            pdf_name = f"{prefix}{first_stem}_{g_idx + 1}{suffix}.pdf"
+                        if len(indices) == 1:
+                            stem = first_stem
+                        elif first_stem == last_stem:
+                            stem = f"{first_stem}_{g_idx + 1}"
                         else:
-                            pdf_name = f"{prefix}{first_stem}_{last_stem}{suffix}.pdf"
-                
-                # Hindari tabrakan nama kembar
-                base_pdf_name = pdf_name
-                dup_counter = 1
-                while pdf_name in seen_names:
-                    pdf_name = f"{Path(base_pdf_name).stem}_{dup_counter}.pdf"
-                    dup_counter += 1
-                seen_names.add(pdf_name)
+                            stem = f"{first_stem}_{last_stem}"
+                        pdf_name = f"{prefix}{stem}{suffix}.pdf"
+                    base_pdf_name = pdf_name
+                    dup_counter = 1
+                    while pdf_name in seen_names:
+                        pdf_name = f"{Path(base_pdf_name).stem}_{dup_counter}.pdf"
+                        dup_counter += 1
+                    seen_names.add(pdf_name)
+                    group_file = scratch_path / "group.pdf"
+                    write_image_pdf((parsed_items[i] for i in indices), group_file,
+                                    scratch_path, base_page_size, orientation, margin,
+                                    prepare_image_for_pdf)
+                    zipf.write(group_file, arcname=pdf_name)
+                    group_file.unlink()
+                    generated_files_count += 1
+            with zipfile.ZipFile(staged_output) as archive:
+                if len(archive.infolist()) != len(groups):
+                    raise RuntimeError("Jumlah file PDF tidak sesuai kelompok.")
+        os.replace(staged_output, final_path)
 
-                pdf_bytes_io = io.BytesIO()
-                first_img.save(
-                    pdf_bytes_io,
-                    "PDF",
-                    resolution=100.0,
-                    save_all=(len(other_imgs) > 0),
-                    append_images=other_imgs
-                )
-                zipf.writestr(pdf_name, pdf_bytes_io.getvalue())
-                generated_files_count += 1
-                
-        return {
-            "success": True,
-            "mode": "individual",
-            "output_path": str(zip_output_path),
-            "filename": zip_output_path.name,
-            "total_images": total_imgs,
-            "total_files": generated_files_count,
-            "group_size": group_size,
-            "file_size": zip_output_path.stat().st_size
-        }
+    result = {
+        "success": True,
+        "mode": "combine" if combined else "individual",
+        "output_path": str(final_path),
+        "filename": final_path.name,
+        "total_images": total_imgs,
+        "total_files": generated_files_count,
+        "file_size": final_path.stat().st_size,
+    }
+    if not combined:
+        result["group_size"] = group_size
+    return result
 
 
 def convert_pdf_to_images(

@@ -4,6 +4,9 @@ import re
 import shutil
 import subprocess
 import asyncio
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from contextlib import asynccontextmanager
@@ -46,7 +49,12 @@ async def lifespan(app: FastAPI):
     registry = get_registry()
     registry.register(UPLOAD_DIR)
     registry.register(OUTPUT_DIR)
-    yield
+    pool = ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("spawn"))
+    app.state.image_conversion_pool = pool
+    try:
+        yield
+    finally:
+        await asyncio.to_thread(pool.shutdown, wait=True, cancel_futures=True)
 
 
 app = FastAPI(
@@ -391,7 +399,7 @@ async def api_image_to_pdf(request: Request, req: ImageToPdfRequest):
         safe_out_name = Path(req.output_filename).name
         out_path = task_output / safe_out_name
         
-        result = convert_images_to_pdf(
+        conversion = partial(convert_images_to_pdf,
             image_paths=req.images,
             output_path=out_path,
             mode=req.mode,
@@ -407,13 +415,18 @@ async def api_image_to_pdf(request: Request, req: ImageToPdfRequest):
             padding=req.padding,
             suffix=req.suffix
         )
+        result = await asyncio.get_running_loop().run_in_executor(
+            request.app.state.image_conversion_pool, conversion
+        )
         
         actual_path = Path(result["output_path"])
         actual_name = actual_path.name
         result["download_url"] = f"/api/download/{task_id}/{actual_name}"
-        result["saved_to_folder"] = handle_custom_save(
+        result["saved_to_folder"] = await asyncio.to_thread(handle_custom_save,
             actual_path, req.custom_output_dir, copy_archive=req.mode == "combine"
         )
+        if req.custom_output_dir and req.custom_output_dir.strip() and not result["saved_to_folder"]:
+            result["warning"] = "PDF selesai dibuat, tetapi gagal disimpan ke folder tujuan. Gunakan unduhan hasil."
         return JSONResponse(result)
     except Exception as e:
         return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
@@ -886,6 +899,7 @@ async def api_download(request: Request, task_id: str, filename: str):
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     import uvicorn
 
     port = int(os.environ.get("PORT", "8000"))

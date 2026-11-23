@@ -11,7 +11,11 @@ import socket
 import threading
 import subprocess
 import shutil
+import multiprocessing
 from pathlib import Path
+
+if __name__ == "__main__":
+    multiprocessing.freeze_support()
 
 # Pastikan path aplikasi ditambahkan ke sys.path
 APP_DIR = Path(__file__).resolve().parent
