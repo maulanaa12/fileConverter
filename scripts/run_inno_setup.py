@@ -1,13 +1,19 @@
 """
 run_inno_setup.py — Cari dan jalankan Inno Setup Compiler (ISCC.exe)
-untuk menghasilkan installer tunggal LocalPDF_Studio_Setup.exe.
+untuk menghasilkan installer dengan nomor versi pada nama file.
 """
 import os
 import subprocess
 import shutil
+import re
+import sys
 from pathlib import Path
 
 def main():
+    project_dir = Path(__file__).resolve().parent.parent
+    installer_script = project_dir / 'installer' / 'installer.iss'
+    version = re.search(r'^#define MyAppVersion "([^"]+)"', installer_script.read_text(encoding='utf-8'), re.MULTILINE).group(1)
+    output_file = project_dir / 'installer' / 'output' / f'LocalPDF_Studio_Setup_{version}.exe'
     candidates = [
         r'C:\Users\azmi maulana\AppData\Local\Programs\Inno Setup 6\ISCC.exe',
         Path(os.environ.get('LOCALAPPDATA', '')) / 'Programs' / 'Inno Setup 6' / 'ISCC.exe',
@@ -26,19 +32,21 @@ def main():
 
     if iscc:
         print(f'[INFO] Inno Setup ditemukan: {iscc}')
-        print('[INFO] Mengompilasi installer tunggal LocalPDF_Studio_Setup.exe...')
-        os.makedirs('installer/output', exist_ok=True)
-        res = subprocess.run([iscc, 'installer/installer.iss'])
+        print(f'[INFO] Mengompilasi {output_file.name}...')
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        res = subprocess.run([iscc, str(installer_script)], cwd=project_dir)
         if res.returncode == 0:
             print('')
             print('======================================================================')
-            print('[SELESAI] Installer v1.2.1 siap dibagikan!')
-            print(f'File Setup: {Path.cwd() / "installer" / "output" / "LocalPDF_Studio_Setup.exe"}')
+            print(f'[SELESAI] Installer v{version} siap dibagikan!')
+            print(f'File Setup: {output_file}')
             print('======================================================================')
         else:
             print(f'[PERINGATAN] Kompilasi installer gagal dengan kode exit {res.returncode}.')
+        return res.returncode
     else:
         print('[CATATAN] Inno Setup 6 tidak ditemukan. Anda dapat menggunakan folder di dist/LocalPDFStudio/')
+        return 1
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

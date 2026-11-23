@@ -13,17 +13,18 @@
         ('/tool/merge', 'Merge PDF', 'layers', 'Gabungkan beberapa PDF dan atur urutannya.'),
         ('/tool/split', 'Split PDF', 'scissors', 'Pisahkan halaman atau ambil rentang tertentu.'),
         ('/tool/compress', 'Compress PDF', 'minimize-2', 'Perkecil ukuran PDF untuk dikirim atau disimpan.'),
-        ('/tool/organize', 'Organize Pages', 'layout-grid', 'Susun ulang, putar, atau hapus halaman PDF.'),
+        ('/tool/organize', 'Organize Pages', 'file-stack', 'Susun ulang, putar, atau hapus halaman PDF.'),
         ('/tool/image-to-pdf', 'Image to PDF', 'image-up', 'Jadikan gambar JPG, PNG, atau WEBP sebagai PDF.'),
         ('/tool/pdf-to-image', 'PDF to Image', 'file-image', 'Simpan halaman PDF sebagai gambar JPG atau PNG.'),
         ('/tool/rename', 'Batch Rename', 'file-pen', 'Ganti nama banyak file dan atur nomor urutnya.')
     ] %}
     <section aria-label="Daftar alat PDF" class="home-tools grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {% for href, name, icon, description in tools %}
-        <a href="{{ href }}" class="tool-card home-tool-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+        <a href="{{ href }}" class="tool-card home-tool-card" aria-labelledby="home-tool-{{ loop.index }}" aria-describedby="home-tool-description-{{ loop.index }}">
             <i data-lucide="{{ icon }}" class="home-tool-icon" aria-hidden="true"></i>
-            <h2 class="font-bold text-slate-900 dark:text-white">{{ name }}</h2>
-            <p class="text-slate-600 dark:text-slate-300">{{ description }}</p>
+            <h2 id="home-tool-{{ loop.index }}">{{ name }}</h2>
+            <p id="home-tool-description-{{ loop.index }}">{{ description }}</p>
+            <span class="home-tool-cta" aria-hidden="true">Open</span>
         </a>
         {% endfor %}
     </section>

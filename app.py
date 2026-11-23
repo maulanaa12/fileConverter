@@ -9,7 +9,7 @@ from typing import List, Dict, Any, Optional
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, UploadFile, File, Form, HTTPException, BackgroundTasks
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +20,7 @@ from slowapi.errors import RateLimitExceeded
 from core.utils import (
     BASE_DIR, UPLOAD_DIR, OUTPUT_DIR,
     generate_task_id, get_task_dirs, cleanup_old_files,
-    get_pdf_info, generate_pdf_thumbnail, format_bytes, natural_sort_key,
+    get_pdf_info, generate_pdf_thumbnail, format_bytes, natural_sort_key, fitz,
     safe_delete_local_file, pick_modern_folder
 )
 from core.merger import merge_pdf_files
@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="LocalPDF Studio",
     description="Aplikasi Web Lokal Pengolah PDF Serbaguna",
-    version="1.2.1",
+    version="1.2.2",
     lifespan=lifespan,
     docs_url=None,       # SEC-10: Disable Swagger UI
     redoc_url=None,      # SEC-10: Disable ReDoc
@@ -293,7 +293,10 @@ async def api_upload(request: Request, files: List[UploadFile] = File(...)):
     
     for file in files:
         safe_filename = Path(file.filename).name
-        dest_path = task_upload / safe_filename
+        # Each upload keeps its own path, including files with identical names.
+        file_upload_dir = task_upload / str(len(uploaded_info))
+        file_upload_dir.mkdir()
+        dest_path = file_upload_dir / safe_filename
         
         with open(dest_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
@@ -570,6 +573,35 @@ async def api_local_file_preview(request: Request, path: str, thumb: bool = Fals
         raise HTTPException(status_code=400, detail=sanitize_error(e))
 
 
+@app.get("/api/pdf-page-preview")
+@limiter.exempt
+async def api_pdf_page_preview(request: Request, path: str, page: int, full: bool = False):
+    """Render satu halaman PDF untuk kartu dan pratinjau layar penuh."""
+    pdf_path = validate_path_allowed(Path(path.strip("'\"")).resolve())
+    validate_file_extension(pdf_path, frozenset({'.pdf'}))
+    if not pdf_path.is_file():
+        raise HTTPException(status_code=404, detail="File PDF tidak ditemukan.")
+    if fitz is None:
+        raise HTTPException(status_code=500, detail="Pratinjau PDF tidak tersedia.")
+    try:
+        with fitz.open(str(pdf_path)) as document:
+            if not 1 <= page <= len(document):
+                raise HTTPException(status_code=400, detail="Nomor halaman tidak valid.")
+            pdf_page = document[page - 1]
+            max_width = 1400 if full else 320
+            max_height = 1800 if full else 420
+            scale = min(max_width / pdf_page.rect.width, max_height / pdf_page.rect.height, 2)
+            pixmap = pdf_page.get_pixmap(matrix=fitz.Matrix(scale, scale), alpha=False)
+            return Response(
+                content=pixmap.tobytes("png"), media_type="image/png",
+                headers={"Cache-Control": "private, max-age=86400"}
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=sanitize_error(exc))
+
+
 def local_directory_listing(target_dir: Path) -> JSONResponse:
     import urllib.parse
 
@@ -659,8 +691,14 @@ async def api_split(request: Request, req: SplitRequest):
 @app.post("/api/organize")
 @limiter.limit(RATE_HEAVY)
 async def api_organize(request: Request, req: OrganizeRequest):
-    """Menyusun ulang, memutar, atau menghapus halaman PDF."""
+    """Menyusun halaman dari satu atau beberapa PDF."""
     try:
+        base_path = validate_path_allowed(req.pdf_path)
+        validate_file_extension(base_path, frozenset({'.pdf'}))
+        for operation in req.operations:
+            if operation.get("source_path"):
+                source_path = validate_path_allowed(operation["source_path"])
+                validate_file_extension(source_path, frozenset({'.pdf'}))
         task_id = generate_task_id()
         _, task_output = get_task_dirs(task_id)
         
@@ -676,9 +714,16 @@ async def api_organize(request: Request, req: OrganizeRequest):
             page_operations=req.operations
         )
         
-        result["download_url"] = f"/api/download/{task_id}/{safe_out_name}"
-        result["saved_to_folder"] = handle_custom_save(out_path, req.custom_output_dir)
+        from urllib.parse import quote
+
+        actual_path = Path(result["output_path"])
+        result["download_url"] = f"/api/download/{task_id}/{quote(actual_path.name)}"
+        result["saved_to_folder"] = handle_custom_save(actual_path, req.custom_output_dir)
+        if req.custom_output_dir and req.custom_output_dir.strip() and not result["saved_to_folder"]:
+            result["save_warning"] = "PDF siap diunduh, tetapi gagal disimpan ke folder pilihan."
         return JSONResponse(result)
+    except HTTPException:
+        raise
     except Exception as e:
         return JSONResponse({"success": False, "message": sanitize_error(e)}, status_code=400)
 

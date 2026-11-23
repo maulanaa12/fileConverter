@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-01T06:35:31Z",
+  "title": "Design System: LocalPDF Studio",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "flat",
+        "value": "none",
+        "purpose": "No shadows in any theme or interaction state."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "160ms ease-out",
+        "purpose": "Color and background changes; disable for reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "toolbar",
+        "value": "900px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary CTA",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Target primary action, pill-shaped in both themes.",
+      "html": "<button class=\"ds-primary\">Gabungkan PDF</button>",
+      "css": ".ds-primary{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;min-height:44px;transition:background-color 160ms ease-out,color 160ms ease-out;box-shadow:none;border:0;border-radius:9999px;padding:12px 24px;background:var(--primary,#d52b27);color:#fff}.ds-primary:hover{background:var(--primary-hover,#c42924)}.ds-primary:focus-visible{outline:3px solid var(--primary,#d52b27);outline-offset:3px;}.ds-primary:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
+    },
+    {
+      "name": "Secondary CTA",
+      "kind": "button",
+      "refersTo": "button-secondary-light",
+      "description": "Neutral pill; dark theme uses the corresponding dark component tokens.",
+      "html": "<button class=\"ds-secondary\">Pilih file</button>",
+      "css": ".ds-secondary{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;min-height:44px;transition:background-color 160ms ease-out,color 160ms ease-out;box-shadow:none;border:1px solid var(--border-c,#cbd5e1);border-radius:9999px;padding:12px 24px;background:var(--surface-muted,#f8fafc);color:var(--ds-ink,#0f172a)}.ds-secondary:hover{background:var(--surface,#fff)}.ds-secondary:focus-visible{outline:3px solid var(--primary,#d52b27);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-secondary{transition:none}}"
+    },
+    {
+      "name": "Document toolbar",
+      "kind": "nav",
+      "refersTo": "toolbar",
+      "description": "Neutral active shortcut, labeled icon, and flat toolbar. Target sample, not an implementation snapshot.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Alat PDF\"><a class=\"ds-nav-link\" href=\"/\" aria-current=\"page\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/></svg>All Tools</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;min-height:68px;background:var(--ds-panel,#fff)}.ds-nav-link{font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;min-height:44px;transition:background-color 160ms ease-out,color 160ms ease-out;box-shadow:none;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;text-decoration:none;color:var(--ds-ink,#0f172a);background:var(--surface-muted,#f8fafc)}.ds-nav-link:hover{text-decoration:underline;text-underline-offset:4px}.ds-nav-link:focus-visible{outline:3px solid var(--primary,#d52b27);outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-nav-link{transition:none}}"
+    },
+    {
+      "name": "File name field",
+      "kind": "input",
+      "description": "Target neutral input with a visible label and action-colored focus outline.",
+      "html": "<label class=\"ds-label\" for=\"ds-filename\">Nama file<input class=\"ds-input\" id=\"ds-filename\" placeholder=\"hasil.pdf\"></label>",
+      "css": ".ds-label{display:grid;gap:8px;font:600 14px/1.5 'Plus Jakarta Sans',sans-serif;color:var(--ds-ink,#0f172a)}.ds-input{min-height:44px;padding:8px 12px;border:1px solid var(--border-c,#cbd5e1);border-radius:9px;background:var(--surface,#fff);color:var(--ds-ink,#0f172a);font:400 17px/1.6 'Plus Jakarta Sans',sans-serif;box-shadow:none}.ds-input::placeholder{color:var(--ds-body,#475569);opacity:1}.ds-input:focus-visible{outline:3px solid var(--primary,#d52b27);outline-offset:3px;}"
+    },
+    {
+      "name": "Tool panel",
+      "kind": "card",
+      "refersTo": "tool-panel",
+      "description": "Flat tonal content panel; interactive card variants add semantic links and focus.",
+      "html": "<section class=\"ds-panel\"><h2>Atur halaman</h2><p>Susun ulang halaman PDF sebelum menyimpan hasilnya.</p></section>",
+      "css": ".ds-panel{padding:24px;border-radius:12px;background:var(--surface-muted,#f8fafc);color:var(--ds-ink,#0f172a);box-shadow:none;font-family:'Plus Jakarta Sans',sans-serif}.ds-panel h2{margin:0;font-size:18px;font-weight:600;line-height:1.3}.ds-panel p{margin:8px 0 0;font-size:14px;font-weight:400;line-height:1.5;color:var(--ds-body,#475569)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Clean desktop utility application",
+    "overview": "Apply Apple's principles of spacing and type hierarchy to LocalPDF Studio's identity. Clear size and weight contrasts, generous vertical whitespace, and flat tonal panels give practical document tasks room to breathe. Product controls stay compact and recognizable; the interface remains calm and useful rather than becoming a marketing page.\n\nThis is the intended system confirmed by the user, not a claim that the entire application already implements it. The supplied Apple DESIGN.md is a reference for principles only. Its fonts, blue palette, marketing layouts, blurred navigation, and card-shadow exception do not transfer to this project.",
+    "keyCharacteristics": [
+      "Plus Jakarta Sans throughout, using only weights 400, 600, and 800.",
+      "Red reserved for interaction; content and structural surfaces remain neutral.",
+      "Pill-shaped CTAs with flat, clearly distinguishable states.",
+      "Generous section spacing and readable type hierarchy in both themes.",
+      "Desktop-first utility workflows with semantic, keyboard-accessible controls."
+    ],
+    "rules": [
+      {
+        "name": "The Interaction-Only Rule",
+        "body": "Accent red is never a content color or structural surface. Every accent use must identify an actionable control or its interaction state.",
+        "section": "colors"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "No shadow exceptions for cards, navigation, dialogs, buttons, or hover states.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Use Plus Jakarta Sans with weights 400, 600, and 800 only.",
+      "Reserve red for actions, links, and focus states.",
+      "Make every CTA pill-shaped.",
+      "Separate sections with neutral tonal panels and generous vertical whitespace.",
+      "Verify contrast, keyboard focus, and the same component states in both themes."
+    ],
+    "donts": [
+      "Use accent red for body text, decorative content, or structural surfaces.",
+      "Add shadows, glows, hover elevation, or blurred glass.",
+      "Import Apple's SF Pro fonts, blue accent, marketing layouts, or shadow exceptions.",
+      "Compress section spacing merely to fit more content into one viewport.",
+      "Treat this document as evidence that the current UI already conforms."
+    ]
+  }
+}

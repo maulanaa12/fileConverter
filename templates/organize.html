@@ -11,9 +11,13 @@
                 <a href="/" aria-label="Kembali ke beranda" class="back-link text-muted"><i data-lucide="arrow-left" class="w-5 h-5"></i></a>
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Organize PDF Pages</h1>
             </div>
-            <p class="text-sm text-slate-500 mt-1 dark:text-slate-400">Susun ulang posisi halaman PDF dengan drag-and-drop, putar rotasi halaman, atau hapus halaman yang tidak perlu.</p>
+            <p class="text-sm text-slate-500 mt-1 dark:text-slate-400">Lihat isi setiap halaman, tambah halaman dari PDF lain, lalu susun, putar, atau hapus sebelum menyimpan.</p>
         </div>
         <div id="top-actions" class="hidden flex items-center gap-2 flex-wrap">
+            <input id="add-pdf-input" type="file" accept=".pdf,application/pdf" multiple class="hidden">
+            <button type="button" id="btn-add-pdf" onclick="document.getElementById('add-pdf-input').click()" class="px-3 py-2 text-xs font-semibold bg-brand-500 hover:bg-brand-600 text-white rounded-xl flex items-center gap-1.5 transition-colors">
+                <i data-lucide="file-plus-2" class="w-4 h-4"></i> Tambah dari PDF lain
+            </button>
             <button onclick="reverseAllPages()" class="px-3 py-2 text-xs font-bold bg-brand-50 dark:bg-brand-500/15 border border-brand-200 dark:border-brand-500/30 text-brand-700 dark:text-brand-300 hover:bg-brand-100 dark:hover:bg-brand-500/25 rounded-xl flex items-center gap-1.5 shadow-sm dark:shadow-none transition-all">
                 <i data-lucide="arrow-left-right" class="w-4 h-4 text-brand-600 dark:text-brand-400"></i> Balik Urutan (Reverse ⇄)
             </button>
@@ -31,7 +35,7 @@
         <div id="organize-dropzone" class="dropzone rounded-3xl bg-white dark:bg-slate-900 p-12 text-center cursor-pointer flex flex-col items-center justify-center min-h-[320px]">
             <input type="file" id="file-input" accept=".pdf,application/pdf" class="hidden">
             <div class="w-20 h-20 rounded-2xl bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400 flex items-center justify-center mb-4 ring-8 ring-brand-50/50 dark:ring-brand-500/10">
-                <i data-lucide="layout-grid" class="w-10 h-10"></i>
+                <i data-lucide="file-stack" class="w-10 h-10"></i>
             </div>
             <h3 class="text-xl font-bold text-slate-800 dark:text-slate-200">Pilih 1 file PDF</h3>
             <p class="text-sm text-slate-500 mt-1 max-w-md dark:text-slate-400">Atau tarik dan letakkan file PDF di sini.</p>
@@ -54,8 +58,18 @@
                 <span id="page-count-badge" class="font-bold text-brand-700 dark:text-brand-300">0 Halaman Aktif</span>
             </div>
 
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-2">
+                <label for="custom-page-order" class="block text-xs font-bold text-slate-800 dark:text-slate-100">Urutan halaman khusus</label>
+                <p class="text-xs text-muted">Gunakan nomor posisi kartu yang tidak dicoret. Contoh <code>3,1,2,2,5-7</code> mengulang halaman 2; halaman yang tidak ditulis tidak ikut hasil.</p>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input id="custom-page-order" type="text" inputmode="text" placeholder="Contoh: 3,1,2,2,5-7" aria-describedby="custom-order-feedback" class="min-w-0 flex-1 px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg dark:text-white focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    <button type="button" id="btn-apply-order" onclick="applyCustomOrder()" class="px-4 py-2 text-sm font-semibold text-white rounded-lg">Terapkan urutan</button>
+                </div>
+                <p id="custom-order-feedback" class="text-xs text-muted" role="status" aria-live="polite">Nomor posisi terlihat di sudut kiri setiap kartu.</p>
+            </div>
+
             <!-- Sortable Pages Grid -->
-            <div id="pages-sortable-grid" class="file-card-grid grid gap-4 min-h-[300px]"></div>
+            <div id="pages-sortable-grid" class="file-card-grid organize-page-grid grid gap-4 min-h-[300px]"></div>
         </div>
 
         <!-- Right: Action Panel -->
@@ -101,26 +115,104 @@
         download_label='Unduh PDF',
         reset_label='Organisir PDF Lain'
     ) }}
+
+    <dialog id="page-preview-dialog" aria-labelledby="preview-page-title" class="text-white">
+        <div class="organize-preview-shell max-w-6xl mx-auto">
+            <div class="flex items-center justify-between gap-3 border-b border-white/20 pb-3">
+                <div class="min-w-0">
+                    <h2 id="preview-page-title" class="font-bold text-sm sm:text-base truncate">Pratinjau halaman</h2>
+                    <p id="preview-page-count" class="text-xs text-slate-300"></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="changePreviewZoom(-0.2)" aria-label="Perkecil pratinjau" class="p-2 rounded-lg bg-white/10 hover:bg-white/20"><i data-lucide="zoom-out" class="w-5 h-5"></i></button>
+                    <button type="button" onclick="changePreviewZoom(0.2)" aria-label="Perbesar pratinjau" class="p-2 rounded-lg bg-white/10 hover:bg-white/20"><i data-lucide="zoom-in" class="w-5 h-5"></i></button>
+                    <button type="button" onclick="closePagePreview()" aria-label="Tutup pratinjau" class="p-2 rounded-lg bg-white/10 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+            <div class="organize-preview-stage flex-1 flex items-center justify-between gap-2">
+                <button type="button" onclick="stepPagePreview(-1)" aria-label="Halaman sebelumnya" class="p-2 rounded-lg bg-white/10 hover:bg-white/20"><i data-lucide="chevron-left" class="w-6 h-6"></i></button>
+                <div class="organize-preview-image-wrap flex-1 flex items-center justify-center">
+                    <p id="page-preview-status" role="status" aria-live="polite">Memuat pratinjau...</p>
+                    <img id="page-preview-image" alt="Pratinjau halaman PDF" class="max-w-full max-h-full object-contain transition-transform duration-100">
+                </div>
+                <button type="button" onclick="stepPagePreview(1)" aria-label="Halaman berikutnya" class="p-2 rounded-lg bg-white/10 hover:bg-white/20"><i data-lucide="chevron-right" class="w-6 h-6"></i></button>
+            </div>
+            <p class="text-center text-xs text-slate-300">Gunakan tombol panah untuk berpindah halaman, Esc untuk menutup.</p>
+        </div>
+    </dialog>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
     let currentPdf = null;
-    let pageItems = []; // [{pageNumber, rotation, deleted, thumbUrl}]
+    let pageItems = [];
     let sortableInstance = null;
+    let previewIndex = 0;
+    let previewZoom = 1;
+    let busy = false;
+    let disabledControls = [];
 
     const dropzoneContainer = document.getElementById('dropzone-container');
     const workspaceContainer = document.getElementById('workspace-container');
     const topActions = document.getElementById('top-actions');
     const pagesSortableGrid = document.getElementById('pages-sortable-grid');
     const fileInput = document.getElementById('file-input');
+    const addPdfInput = document.getElementById('add-pdf-input');
+    const previewDialog = document.getElementById('page-preview-dialog');
+    const previewImage = document.getElementById('page-preview-image');
+    const previewStatus = document.getElementById('page-preview-status');
+
+    function setBusy(value) {
+        busy = value;
+        if (value) {
+            disabledControls = [...document.querySelectorAll('#top-actions button, #top-actions input, #workspace-container button, #workspace-container input, #dropzone-container button, #dropzone-container input')]
+                .map(control => ({ control, disabled: control.disabled }));
+            disabledControls.forEach(({ control }) => control.disabled = true);
+        } else {
+            disabledControls.forEach(({ control, disabled }) => control.disabled = disabled);
+            disabledControls = [];
+        }
+        workspaceContainer.setAttribute('aria-busy', String(value));
+        if (sortableInstance) sortableInstance.option('disabled', value);
+    }
+
+    previewImage.addEventListener('load', () => {
+        previewStatus.classList.add('hidden');
+        previewImage.classList.remove('hidden');
+    });
+    previewImage.addEventListener('error', () => {
+        previewImage.classList.add('hidden');
+        previewStatus.classList.remove('hidden');
+        previewStatus.textContent = 'Pratinjau halaman tidak dapat dimuat. Tutup lalu buka kembali untuk mencoba lagi.';
+    });
 
     setupDropzone(document.getElementById('organize-dropzone'), fileInput, (files) => {
         if (files.length > 0) handlePdfUpload(files[0]);
     });
+    addPdfInput.addEventListener('change', async (event) => {
+        const files = [...event.target.files];
+        event.target.value = '';
+        if (files.length) await addPdfPages(files);
+    });
+    document.getElementById('custom-page-order').addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') applyCustomOrder();
+    });
+
+    function appendPagesFromPdf(file) {
+        for (let page = 1; page <= file.page_count; page++) {
+            pageItems.push({
+                sourcePath: file.temp_path,
+                sourceName: file.filename,
+                pageNumber: page,
+                rotation: 0,
+                deleted: false
+            });
+        }
+    }
 
     async function handlePdfUpload(file) {
+        if (busy) return;
         if (!file.name.toLowerCase().endsWith('.pdf')) {
             showToast('Harap pilih file PDF.', 'warning');
             return;
@@ -129,11 +221,12 @@
         showToast('Memuat dokumen PDF...', 'info');
         const formData = new FormData();
         formData.append('files', file);
+        setBusy(true);
 
         try {
             const res = await fetch('/api/upload', { method: 'POST', body: formData });
             const data = await res.json();
-            if (data.success && data.files.length > 0) {
+            if (res.ok && data.success && data.files?.length > 0 && data.files[0].page_count > 0) {
                 const f = data.files[0];
                 currentPdf = {
                     id: f.id,
@@ -143,24 +236,149 @@
                 };
 
                 pageItems = [];
-                for (let i = 1; i <= currentPdf.pageCount; i++) {
-                    pageItems.push({
-                        pageNumber: i,
-                        rotation: 0,
-                        deleted: false
-                    });
-                }
+                appendPagesFromPdf(f);
 
                 renderWorkspace();
                 showToast(`Dokumen dengan ${currentPdf.pageCount} halaman berhasil dimuat`, 'success');
+            } else {
+                showToast('PDF tidak dapat dimuat.', 'error');
             }
         } catch (err) {
             console.error(err);
             showToast('Gagal memproses file PDF.', 'error');
+        } finally {
+            setBusy(false);
         }
     }
 
+    async function addPdfPages(files) {
+        if (busy || !currentPdf) return;
+        const invalid = files.find(file => !file.name.toLowerCase().endsWith('.pdf'));
+        if (invalid) {
+            showToast('Semua file tambahan harus berformat PDF.', 'warning');
+            return;
+        }
+        setBusy(true);
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+        try {
+            const response = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await response.json();
+            if (!response.ok || !data.success || !data.files?.length || data.files.some(file => !Number.isInteger(file.page_count) || file.page_count < 1)) {
+                showToast('PDF tambahan tidak dapat dimuat.', 'error');
+                return;
+            }
+            data.files.forEach(appendPagesFromPdf);
+            renderWorkspace();
+            document.getElementById('custom-order-feedback').textContent = `${data.files.length} PDF ditambahkan. Nomor posisi kartu telah diperbarui.`;
+            showToast(`${data.files.length} PDF ditambahkan. Geser kartunya ke posisi yang diinginkan.`, 'success');
+        } catch (error) {
+            console.error(error);
+            showToast('Gagal menambah halaman PDF.', 'error');
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    function pagePreviewUrl(item, full) {
+        return `/api/pdf-page-preview?path=${encodeURIComponent(item.sourcePath)}&page=${item.pageNumber}&full=${full}`;
+    }
+
+    function parseCustomOrder(value) {
+        const order = [];
+        for (const part of value.split(',')) {
+            const match = part.trim().match(/^(\d+)(?:-(\d+))?$/);
+            if (!match) throw new Error('Tulis nomor halaman dipisahkan koma, misalnya 3,1,2 atau 5-7.');
+            const start = Number(match[1]);
+            const end = match[2] ? Number(match[2]) : start;
+            if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 1 || end < 1 || start > pageItems.length || end > pageItems.length) {
+                throw new Error(`Gunakan nomor posisi antara 1 dan ${pageItems.length}.`);
+            }
+            if (order.length + Math.abs(end - start) + 1 > 2000) throw new Error('Urutan terlalu panjang (maksimal 2000 halaman).');
+            const step = start <= end ? 1 : -1;
+            for (let number = start; step > 0 ? number <= end : number >= end; number += step) {
+                if (!pageItems[number - 1] || pageItems[number - 1].deleted) {
+                    throw new Error(`Posisi ${number} tidak ada atau sedang ditandai hapus.`);
+                }
+                order.push(number);
+                if (order.length > 2000) throw new Error('Urutan terlalu panjang (maksimal 2000 halaman).');
+            }
+        }
+        return order;
+    }
+
+    function applyCustomOrder() {
+        if (busy || !currentPdf) return;
+        const input = document.getElementById('custom-page-order');
+        const feedback = document.getElementById('custom-order-feedback');
+        try {
+            const order = parseCustomOrder(input.value.trim());
+            pageItems = order.map(number => ({ ...pageItems[number - 1], deleted: false }));
+            renderWorkspace();
+            input.value = '';
+            feedback.textContent = `${order.length} halaman disusun. Periksa pratinjau sebelum menyimpan.`;
+            document.getElementById('order-status').textContent = feedback.textContent;
+            showToast('Urutan khusus diterapkan.', 'success');
+        } catch (error) {
+            feedback.textContent = error.message;
+            showToast(error.message, 'warning');
+            input.focus();
+        }
+    }
+
+    function updatePagePreview() {
+        const item = pageItems[previewIndex];
+        if (!item) return;
+        document.getElementById('preview-page-title').textContent = `${item.sourceName}, halaman asli ${item.pageNumber}`;
+        document.getElementById('preview-page-count').textContent = `Posisi ${previewIndex + 1} dari ${pageItems.length}${item.deleted ? ' (ditandai hapus, tidak ikut hasil)' : ''}`;
+        const image = document.getElementById('page-preview-image');
+        image.classList.add('hidden');
+        previewStatus.classList.remove('hidden');
+        previewStatus.textContent = 'Memuat pratinjau...';
+        image.src = pagePreviewUrl(item, true);
+        image.alt = `Pratinjau ${item.sourceName} halaman ${item.pageNumber}`;
+        image.style.transform = `scale(${previewZoom}) rotate(${item.rotation}deg)`;
+    }
+
+    function openPagePreview(index) {
+        if (busy || !pageItems[index]) return;
+        previewIndex = index;
+        previewZoom = 1;
+        updatePagePreview();
+        previewDialog.showModal();
+    }
+
+    function closePagePreview() {
+        previewDialog.close();
+    }
+
+    function stepPagePreview(step) {
+        if (!pageItems.length) return;
+        previewIndex = (previewIndex + step + pageItems.length) % pageItems.length;
+        previewZoom = 1;
+        updatePagePreview();
+    }
+
+    function changePreviewZoom(delta) {
+        if (!pageItems[previewIndex]) return;
+        previewZoom = Math.min(3, Math.max(0.5, previewZoom + delta));
+        const item = pageItems[previewIndex];
+        document.getElementById('page-preview-image').style.transform = `scale(${previewZoom}) rotate(${item.rotation}deg)`;
+    }
+
+    previewDialog.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            stepPagePreview(event.key === 'ArrowLeft' ? -1 : 1);
+        }
+    });
+
     function renderWorkspace() {
+        if (sortableInstance) {
+            sortableInstance.destroy();
+            sortableInstance = null;
+        }
+        pagesSortableGrid.innerHTML = '';
         if (!currentPdf || pageItems.length === 0) {
             dropzoneContainer.classList.remove('hidden');
             workspaceContainer.classList.add('hidden');
@@ -177,6 +395,7 @@
 
         pageItems.forEach((item, index) => {
             if (!item.deleted) activePages++;
+            const thumbnailUrl = pagePreviewUrl(item, false);
 
             const card = document.createElement('div');
             card.className = `group relative bg-white dark:bg-slate-900 border ${item.deleted ? 'border-dashed border-rose-400/70 dark:border-rose-500/60' : 'border-slate-200 dark:border-slate-700'} rounded-2xl p-3 shadow-sm flex flex-col justify-between cursor-grab active:cursor-grabbing`;
@@ -184,7 +403,7 @@
 
             card.innerHTML = `
                 <div class="file-card-toolbar">
-                <div class="w-6 h-6 rounded-full bg-slate-900/80 text-white text-[11px] font-bold flex items-center justify-center shadow">
+                <div class="w-6 h-6 rounded-full bg-slate-900/80 text-white text-[11px] font-bold flex items-center justify-center shadow ${item.deleted ? 'line-through' : ''}">
                     ${index + 1}
                 </div>
 
@@ -198,28 +417,33 @@
                 </div>
 
                 </div>
-                <div class="my-auto py-2">
-                    <div class="w-full h-36 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center text-muted font-bold text-sm transition-transform" style="transform: rotate(${item.rotation}deg)">
-                        <i data-lucide="file-text" class="w-8 h-8 text-brand-400 mb-1"></i>
-                        <span>Hal Asli: ${item.pageNumber}</span>
-                    </div>
-                </div>
+                <button type="button" onclick="openPagePreview(${index})" class="organize-page-thumbnail my-2 w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex items-center justify-center overflow-hidden focus-visible:ring-2 focus-visible:ring-brand-500" title="Lihat halaman lebih besar">
+                    <img src="${thumbnailUrl}" loading="lazy" alt="Halaman asli ${item.pageNumber}" class="max-w-full max-h-full object-contain" style="transform: rotate(${item.rotation}deg)">
+                </button>
 
                 <div class="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
-                    <span class="text-[11px] font-semibold ${item.deleted ? 'text-rose-500 dark:text-rose-400 line-through' : 'text-slate-600 dark:text-slate-400'}">
-                        ${item.deleted ? 'Dihapus' : `Halaman ${index + 1}`}
-                    </span>
+                    <span class="source-name block truncate text-[11px] text-slate-600 dark:text-slate-400"></span>
+                    <span class="text-[11px] font-semibold ${item.deleted ? 'text-rose-500 dark:text-rose-400 line-through' : 'text-slate-700 dark:text-slate-200'}">${item.deleted ? 'Dihapus' : `Halaman asli ${item.pageNumber}`}</span>
                 </div>
             `;
+            card.querySelector('.source-name').textContent = item.sourceName;
+            card.querySelector('.source-name').title = item.sourceName;
+            const thumbnail = card.querySelector('.organize-page-thumbnail img');
+            thumbnail.addEventListener('error', () => {
+                const fallback = document.createElement('span');
+                fallback.className = 'text-xs text-muted';
+                fallback.textContent = 'Pratinjau tidak tersedia. Klik untuk mencoba.';
+                thumbnail.replaceWith(fallback);
+            });
             pagesSortableGrid.appendChild(card);
-            addReorderControls(card, index, pageItems, renderWorkspace, `Halaman asli ${item.pageNumber}`);
+            addReorderControls(card, index, pageItems, renderWorkspace, `${item.sourceName} halaman ${item.pageNumber}`);
         });
 
         document.getElementById('page-count-badge').innerText = `${activePages} Halaman Aktif`;
         lucide.createIcons();
 
-        if (sortableInstance) sortableInstance.destroy();
         sortableInstance = new Sortable(pagesSortableGrid, {
+            disabled: busy,
             filter: 'button, input, label',
             preventOnFilter: false,
             animation: 200,
@@ -234,28 +458,32 @@
     }
 
     function rotatePage(index) {
+        if (busy) return;
         pageItems[index].rotation = (pageItems[index].rotation + 90) % 360;
         renderWorkspace();
     }
 
     function rotateAllPages() {
+        if (busy) return;
         pageItems.forEach(p => p.rotation = (p.rotation + 90) % 360);
         renderWorkspace();
     }
 
     function reverseAllPages() {
+        if (busy) return;
         pageItems.reverse();
         renderWorkspace();
         showToast('Urutan halaman dibalik (Reverse ⇄)', 'info');
     }
 
     function toggleDeletePage(index) {
+        if (busy) return;
         pageItems[index].deleted = !pageItems[index].deleted;
         renderWorkspace();
     }
 
     async function processOrganize() {
-        if (!currentPdf) return;
+        if (busy || !currentPdf) return;
 
         const activePages = pageItems.filter(p => !p.deleted);
         if (activePages.length === 0) {
@@ -264,7 +492,7 @@
         }
 
         const btn = document.getElementById('btn-save-organize');
-        btn.disabled = true;
+        setBusy(true);
         btn.innerHTML = `<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i> Menyusun PDF...`;
         lucide.createIcons();
 
@@ -273,6 +501,7 @@
             output_filename: document.getElementById('output-filename').value.trim() || 'organized_document.pdf',
             custom_output_dir: document.getElementById('custom-output-dir').value.trim() || null,
             operations: pageItems.map(p => ({
+                source_path: p.sourcePath,
                 page: p.pageNumber,
                 rotation: p.rotation,
                 delete: p.deleted
@@ -287,8 +516,8 @@
             });
             const data = await res.json();
 
-            if (!data.success) {
-                showToast(data.message || 'Gagal menyusun PDF', 'error');
+            if (!res.ok || !data.success) {
+                showToast(data.message || (typeof data.detail === 'string' ? data.detail : 'Gagal menyusun PDF'), 'error');
                 return;
             }
 
@@ -307,12 +536,16 @@
             }
 
             openResultModal(btn);
+            if (data.save_warning) {
+                document.getElementById('result-meta').textContent += ` ${data.save_warning}`;
+                showToast(data.save_warning, 'warning');
+            }
             lucide.createIcons();
         } catch (err) {
             console.error(err);
             showToast('Terjadi kesalahan saat menyusun PDF.', 'error');
         } finally {
-            btn.disabled = false;
+            setBusy(false);
             btn.innerHTML = `<i data-lucide="download" class="w-5 h-5"></i><span>Simpan & Unduh PDF</span>`;
             lucide.createIcons();
         }
@@ -339,9 +572,14 @@
     }
 
     function resetTool() {
+        if (busy) return;
+        closePagePreview();
         closeResultModal();
         currentPdf = null;
         pageItems = [];
+        previewImage.removeAttribute('src');
+        document.getElementById('custom-page-order').value = '';
+        document.getElementById('custom-order-feedback').textContent = 'Nomor posisi terlihat di sudut kiri setiap kartu.';
         renderWorkspace();
     }
 </script>

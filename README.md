@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.1-teal" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.2.2-teal" alt="Version">
   <img src="https://img.shields.io/badge/platform-Windows-blue" alt="Platform">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="License">
   <img src="https://img.shields.io/badge/python-3.10+-yellow" alt="Python">
@@ -33,7 +33,8 @@ Kebanyakan tools PDF online mengharuskan Anda **mengunggah dokumen ke server** �
 
 | Versi | Tanggal | Download | Catatan |
 |-------|---------|----------|---------|
-| **v1.2.1** (Terbaru) | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases/latest) | Indikator nomor file & halaman pada Lightbox gambar, update bundle |
+| **v1.2.2** (Build lokal) | 2 Oktober 2026 | `installer/output/LocalPDF_Studio_Setup_1.2.2.exe` | Penanganan shortcut Desktop yang ditolak Windows, nama installer menyertakan versi |
+| v1.2.1 | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases/latest) | Indikator nomor file & halaman pada Lightbox gambar, update bundle |
 | v1.2.0 | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases) | Security hardening, 3-level compress, dependency pinning |
 | v1.1.0 | September 2026 | [⬇️ Download Installer](https://github.com/maulanaa12/fileConverter/releases) | Semua 7 fitur inti, desktop wrapper, native folder picker |
 
@@ -105,7 +106,10 @@ Pisahkan PDF menjadi beberapa file:
 
 ### 📄 Organize Pages
 Atur ulang halaman PDF secara visual:
+- Pratinjau setiap halaman dan buka tampilan besar untuk memeriksa isinya
+- Tambahkan halaman dari PDF lain ke dokumen yang sedang disusun
 - Drag-and-drop untuk mengubah urutan halaman
+- Atur urutan dengan nomor posisi, rentang, dan nomor berulang (misal `3,1,2,2,5-7`)
 - Rotasi per halaman
 - Hapus halaman yang tidak diinginkan
 
@@ -137,6 +141,12 @@ Perkecil ukuran file PDF dengan 3 level kompresi:
 ---
 
 ## 📋 Changelog
+
+### v1.2.2 — 2 Oktober 2026
+
+- Instalasi tetap selesai ketika Windows menolak pembuatan shortcut Desktop; penyebab kegagalan dicatat pada log installer.
+- Ikon shortcut menggunakan ikon yang tertanam di executable, dan shortcut Desktop dibersihkan saat uninstall.
+- Nomor versi aplikasi dan nama file installer diperbarui ke `1.2.2`.
 
 ### v1.2.1 — September 2026
 **UX & Image-to-PDF Lightbox Grouping**
@@ -225,7 +235,7 @@ pip install pyinstaller
 # Jalankan build script
 .\build_desktop.bat
 # Output: dist/LocalPDFStudio/ (portable)
-# Output: installer/output/LocalPDF_Studio_Setup.exe (installer)
+# Output: installer/output/LocalPDF_Studio_Setup_1.2.2.exe (installer)
 ```
 
 ### Menjalankan Tests

@@ -62,6 +62,11 @@ echo.
 :: 6. Cek dan jalankan Inno Setup Compiler
 echo [INFO] Memeriksa Inno Setup Compiler...
 python scripts\run_inno_setup.py
+if %errorlevel% neq 0 (
+    echo [ERROR] Installer gagal dibuat. Jangan bagikan file installer lama.
+    pause
+    exit /b 1
+)
 
 echo.
 echo Tekan tombol apa saja untuk menutup jendela ini...

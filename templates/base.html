@@ -10,9 +10,9 @@
     <link rel="icon" type="image/x-icon" href="/static/app_icon.ico">
     <link rel="apple-touch-icon" href="/static/app_icon.png">
     <!-- Tailwind CSS (build lokal) -->
-    <link rel="stylesheet" href="/static/css/tailwind.css?v=2">
+    <link rel="stylesheet" href="/static/css/tailwind.css?v=3">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css?v=2.4">
+    <link rel="stylesheet" href="/static/css/style.css?v=2.9">
     {% block extra_head %}{% endblock %}
 </head>
 <body class="h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased selection:bg-brand-500 selection:text-white {% if active_tool == 'index' %}home-page{% else %}tool-page{% endif %} {% if active_tool in ['merge', 'split', 'compress', 'organize', 'pdf_to_image'] %}upload-tool-page{% endif %}">
@@ -20,38 +20,30 @@
     <!-- Top Navigation Bar -->
     <header class="site-header sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
+            <div class="toolbar-row">
                 <!-- Logo -->
                 <div class="flex items-center">
                     <a href="/" class="site-wordmark inline-flex items-center text-xl font-extrabold tracking-tight text-slate-900 dark:text-white" aria-label="LocalPDF Studio, beranda">
-                        Local<span class="text-brand-700 dark:text-brand-400">PDF</span><span class="ml-1.5 font-medium text-slate-500 dark:text-slate-400">Studio</span>
+                        <span class="toolbar-brand-mark" aria-hidden="true"><i data-lucide="files"></i></span>
+                        <span class="toolbar-brand-name">Local<span class="text-brand-700 dark:text-brand-400">PDF</span><span class="toolbar-brand-suffix">Studio</span></span>
                     </a>
                 </div>
 
                 <!-- Navigation Links (desktop) -->
-                <nav aria-label="Alat PDF" class="desktop-tool-nav items-center gap-1">
-                    <a href="/tool/merge" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'merge' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                        Merge PDF
+                {% set toolbar_tools = [('index', '/', 'layout-grid', 'All Tools'), ('merge', '/tool/merge', 'combine', 'Merge'), ('split', '/tool/split', 'scissors', 'Split'), ('compress', '/tool/compress', 'minimize-2', 'Compress')] %}
+                <nav aria-label="Alat PDF" class="desktop-tool-nav">
+                    {% for key, href, icon, label in toolbar_tools %}
+                    <a href="{{ href }}" class="toolbar-link{% if active_tool == key %} is-active{% endif %}"{% if active_tool == key %} aria-current="page"{% endif %}>
+                        <i data-lucide="{{ icon }}" aria-hidden="true"></i><span>{{ label }}</span>
                     </a>
-                    <a href="/tool/split" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'split' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                        Split PDF
-                    </a>
-                    <a href="/tool/compress" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'compress' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                        Compress PDF
-                    </a>
-                    <a href="/tool/image-to-pdf" class="px-3 py-2 rounded-lg text-sm font-medium {% if active_tool == 'image_to_pdf' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                        Image to PDF
-                    </a>
-                    <a href="/" class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 transition-colors">
-                        Semua Alat
-                    </a>
+                    {% endfor %}
                 </nav>
 
                 <!-- Right Action / Status -->
-                <div class="flex items-center gap-2.5">
+                <div class="toolbar-utilities">
                     <button id="theme-toggle" aria-label="Ganti tema terang/gelap" title="Ganti tema" class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors">
-                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
-                        <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block" aria-hidden="true"></i>
+                        <i data-lucide="moon" class="w-5 h-5 block dark:hidden" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -59,27 +51,11 @@
             <details id="mobile-tool-menu" class="mobile-tool-menu">
                 <summary>Pilih alat PDF</summary>
                 <nav aria-label="Alat PDF" class="mobile-tool-links">
-                <a href="/tool/merge" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {% if active_tool == 'merge' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                    Merge PDF
+                {% for key, href, icon, label in toolbar_tools %}
+                <a href="{{ href }}" class="toolbar-link{% if active_tool == key %} is-active{% endif %}"{% if active_tool == key %} aria-current="page"{% endif %}>
+                    <i data-lucide="{{ icon }}" aria-hidden="true"></i><span>{{ label }}</span>
                 </a>
-                <a href="/tool/image-to-pdf" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {% if active_tool == 'image_to_pdf' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                    Image to PDF
-                </a>
-                <a href="/tool/pdf-to-image" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {% if active_tool == 'pdf_to_image' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                    PDF to Image
-                </a>
-                <a href="/tool/rename" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {% if active_tool == 'rename' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                    Batch Rename
-                </a>
-                <a href="/tool/split" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {% if active_tool == 'split' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                    Split PDF
-                </a>
-                <a href="/tool/organize" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {% if active_tool == 'organize' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                    Organize Pages
-                </a>
-                <a href="/tool/compress" class="px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap {% if active_tool == 'compress' %}bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300{% else %}text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800{% endif %} transition-colors">
-                    Compress PDF
-                </a>
+                {% endfor %}
                 </nav>
             </details>
         </div>
@@ -102,7 +78,7 @@
     <!-- Footer -->
     <footer class="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <p><strong>LocalPDF Studio</strong> <span class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 ml-1">v1.2.1</span> &copy; 2026. Alat untuk mengolah PDF dan gambar.</p>
+            <p><strong>LocalPDF Studio</strong> <span class="font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 ml-1">v1.2.2</span> &copy; 2026. Alat untuk mengolah PDF dan gambar.</p>
             <p class="text-slate-500 dark:text-slate-400">File diproses di komputer yang menjalankan aplikasi.</p>
         </div>
     </footer>

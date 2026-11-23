@@ -135,38 +135,42 @@ def split_pdf(
 def organize_pdf_pages(
     pdf_path: str | Path,
     output_path: str | Path,
-    page_operations: List[Dict[str, Any]] # [{"page": 1, "rotation": 0, "delete": False}, ...]
+    page_operations: List[Dict[str, Any]]
 ) -> Dict[str, Any]:
     """
-    Menyusun ulang, memutar, atau menghapus halaman pada PDF.
+    Menyusun halaman dari satu atau beberapa PDF sesuai urutan operasi.
     """
     pdf_path = Path(pdf_path)
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     
-    reader = PdfReader(str(pdf_path))
-    total_pages = len(reader.pages)
-    
+    readers = {pdf_path.resolve(): PdfReader(str(pdf_path))}
     writer = PdfWriter()
     added_count = 0
     
     for op in page_operations:
         if op.get("delete", False):
             continue
+        source_path = Path(op.get("source_path") or pdf_path).resolve()
+        if source_path not in readers:
+            readers[source_path] = PdfReader(str(source_path))
+        reader = readers[source_path]
         p_num = int(op.get("page", 1))
         rot = int(op.get("rotation", 0)) % 360
+        if rot % 90:
+            raise ValueError("Rotasi halaman harus kelipatan 90 derajat.")
         
-        if 1 <= p_num <= total_pages:
-            page = reader.pages[p_num - 1]
-            if rot != 0:
-                page.rotate(rot)
-            writer.add_page(page)
-            added_count += 1
+        if not 1 <= p_num <= len(reader.pages):
+            raise ValueError(f"Halaman {p_num} tidak ada di {source_path.name}.")
+        page = writer.add_page(reader.pages[p_num - 1])
+        if rot != 0:
+            page.rotate(rot)
+        added_count += 1
             
     if added_count == 0:
         raise ValueError("Semua halaman dihapus atau tidak ada halaman yang valid.")
         
-    target_pdf = output_path if output_path.suffix == ".pdf" else output_path.with_suffix(".pdf")
+    target_pdf = output_path if output_path.suffix.lower() == ".pdf" else output_path.with_suffix(".pdf")
     with open(target_pdf, "wb") as f_out:
         writer.write(f_out)
         
